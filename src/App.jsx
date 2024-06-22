@@ -4,7 +4,8 @@ import AdminLogin from "./AdminLogin";
 import OrganizerLogin from "./OrganizerLogin";
 import AdminDashboard from "./AdminDashboard";
 import SalesReport from "./SalesReport";
-import EventComponent from "./Event"; // Import SalesReport component
+import EventComponent from "./Event";
+import MessageComponent from "./Message"; // Import SalesReport component
 import "./App.css";
 
 const salesData = Array.from({ length: 150 }, (_, i) => {
@@ -28,6 +29,7 @@ function App() {
           element={<AdminDashboard salesData={salesData} />}
         />
         <Route path="/events" element={<EventComponent />} />
+        <Route path="/messages" element={<MessageComponent />} />
         <Route
           path="/sales-report"
           element={<SalesReport salesData={salesData} />}
