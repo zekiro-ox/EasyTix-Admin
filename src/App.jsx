@@ -3,7 +3,8 @@ import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import AdminLogin from "./AdminLogin";
 import OrganizerLogin from "./OrganizerLogin";
 import AdminDashboard from "./AdminDashboard";
-import SalesReport from "./SalesReport"; // Import SalesReport component
+import SalesReport from "./SalesReport";
+import EventComponent from "./Event"; // Import SalesReport component
 import "./App.css";
 
 const salesData = Array.from({ length: 150 }, (_, i) => {
@@ -26,6 +27,7 @@ function App() {
           path="/dashboard"
           element={<AdminDashboard salesData={salesData} />}
         />
+        <Route path="/events" element={<EventComponent />} />
         <Route
           path="/sales-report"
           element={<SalesReport salesData={salesData} />}

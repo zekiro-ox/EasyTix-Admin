@@ -56,7 +56,10 @@ const Sidebar = () => {
           isOpen ? "translate-x-0" : "-translate-x-full"
         } sm:translate-x-0`}
         aria-label="Sidebar"
-        style={{ backgroundColor: "#6B46C1" }} // Set background color to purple
+        style={{
+          backgroundImage: "linear-gradient(to bottom right, #6B46C1, #805AD5)",
+          // Set gradient background color to purple
+        }}
       >
         <div className="h-full px-3 py-4 overflow-y-auto m-2">
           <div className="flex items-center justify-center mb-4">
