@@ -35,6 +35,7 @@ const EventComponent = () => {
 
   const [searchTerm, setSearchTerm] = useState("");
   const [showAddForm, setShowAddForm] = useState(false);
+  const [showEditForm, setShowEditForm] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [newEventData, setNewEventData] = useState(null); // State to hold newly added event data
@@ -53,8 +54,19 @@ const EventComponent = () => {
     setShowAddForm(false); // Hide the form after adding event
   };
 
+  const handleEditEvent = (editedEvent) => {
+    const updatedEvents = events.map((event) =>
+      event.id === editedEvent.id ? { ...editedEvent } : event
+    );
+    setEvents(updatedEvents);
+    setSelectedEvent(null); // Clear selected event
+    setShowEditForm(false); // Hide edit form after editing
+  };
+
   const handleCancel = () => {
-    setShowAddForm(false); // Hide the form when cancel is clicked
+    setShowAddForm(false); // Hide the add form
+    setShowEditForm(false); // Hide the edit form
+    setSelectedEvent(null); // Clear selected event
   };
 
   const toggleStatus = (eventId) => {
@@ -81,8 +93,19 @@ const EventComponent = () => {
     setShowDetails(true);
   };
 
+  const openEditForm = (eventId) => {
+    const eventToEdit = events.find((event) => event.id === eventId);
+    setSelectedEvent(eventToEdit);
+    setShowEditForm(true);
+  };
+
   const closeDetails = () => {
     setShowDetails(false);
+    setSelectedEvent(null);
+  };
+
+  const closeEditForm = () => {
+    setShowEditForm(false);
     setSelectedEvent(null);
   };
 
@@ -121,6 +144,14 @@ const EventComponent = () => {
 
           {showAddForm && (
             <AddEventForm onAddEvent={handleAddEvent} onCancel={handleCancel} />
+          )}
+
+          {showEditForm && selectedEvent && (
+            <AddEventForm
+              event={selectedEvent}
+              onAddEvent={handleEditEvent}
+              onCancel={closeEditForm}
+            />
           )}
 
           {showDetails && selectedEvent && (
@@ -186,13 +217,13 @@ const EventComponent = () => {
                         <FaArchive className="mr-1" />
                         Archive
                       </button>
-                      <Link
-                        to={`/edit-event/${event.id}`}
+                      <button
+                        onClick={() => openEditForm(event.id)} // Open edit form
                         className="flex items-center text-indigo-600 hover:text-indigo-900 mr-2"
                       >
                         <FaEdit className="mr-1" />
                         Edit
-                      </Link>
+                      </button>
                       <button
                         onClick={() => openDetails(event.id)} // Open details modal
                         className="flex items-center text-indigo-600 hover:text-indigo-900"

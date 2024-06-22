@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 
-const AddEventForm = ({ onAddEvent, onCancel }) => {
+const AddEventForm = ({ event, onAddEvent, onCancel }) => {
   const [newEvent, setNewEvent] = useState({
     name: "",
     description: "",
@@ -13,6 +13,14 @@ const AddEventForm = ({ onAddEvent, onCancel }) => {
     eventPoster: null,
     seatMap: null,
   });
+
+  useEffect(() => {
+    if (event) {
+      setNewEvent({
+        ...event,
+      });
+    }
+  }, [event]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -26,7 +34,6 @@ const AddEventForm = ({ onAddEvent, onCancel }) => {
 
   const handleAddEvent = () => {
     onAddEvent(newEvent);
-    // Reset form after adding event
     resetForm();
   };
 
@@ -51,7 +58,9 @@ const AddEventForm = ({ onAddEvent, onCancel }) => {
 
   return (
     <div className="mb-4 bg-white rounded-lg shadow-md p-4">
-      <h2 className="text-lg font-medium mb-4">Add New Event</h2>
+      <h2 className="text-lg font-medium mb-4">
+        {event ? "Edit Event" : "Add New Event"}
+      </h2>
       <div className="grid grid-cols-2 gap-4">
         <div className="col-span-2 sm:col-span-1">
           <label
@@ -212,7 +221,7 @@ const AddEventForm = ({ onAddEvent, onCancel }) => {
           onClick={handleAddEvent}
           className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 focus:outline-none focus:ring focus:ring-purple-200"
         >
-          Add Event
+          {event ? "Save Changes" : "Add Event"}
         </button>
       </div>
     </div>
@@ -220,8 +229,9 @@ const AddEventForm = ({ onAddEvent, onCancel }) => {
 };
 
 AddEventForm.propTypes = {
-  onAddEvent: PropTypes.func.isRequired,
-  onCancel: PropTypes.func.isRequired,
+  event: PropTypes.object, // Event to edit, if provided
+  onAddEvent: PropTypes.func.isRequired, // Function to handle adding/editing event
+  onCancel: PropTypes.func.isRequired, // Function to handle canceling form action
 };
 
 export default AddEventForm;
