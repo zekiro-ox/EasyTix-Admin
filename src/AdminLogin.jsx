@@ -7,6 +7,7 @@ const AdminLogin = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false); // State for loading animation
 
   const navigate = useNavigate(); // Initialize useNavigate hook
 
@@ -16,15 +17,19 @@ const AdminLogin = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    setIsLoading(true); // Start loading animation
 
     // Replace with actual authentication logic (e.g., API call, authentication service)
     const mockEmail = "admin@example.com";
     const mockPassword = "password";
 
-    if (email === mockEmail && password === mockPassword) {
-      setIsLoggedIn(true);
-      navigate("/dashboard"); // Navigate to dashboard on successful login
-    }
+    setTimeout(() => {
+      if (email === mockEmail && password === mockPassword) {
+        setIsLoggedIn(true);
+        navigate("/dashboard"); // Navigate to dashboard on successful login
+      }
+      setIsLoading(false); // Stop loading animation after a short delay
+    }, 3000); // Simulate a delay for demo purposes
   };
 
   return (
@@ -130,8 +135,35 @@ const AdminLogin = () => {
           <button
             type="submit"
             className="w-full py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+            disabled={isLoading} // Disable button while loading
           >
-            Sign In
+            {isLoading ? (
+              <div className="flex items-center justify-center">
+                <svg
+                  className="animate-spin h-5 w-5 mr-3 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V2.5a.5.5 0 00-1 0V4a8 8 0 018 8h1.5a.5.5 0 000-1H20a8 8 0 01-8 8v1.5a.5.5 0 001 0V20a8 8 0 01-8-8H2.5a.5.5 0 000 1H4z"
+                  ></path>
+                </svg>
+                <span>Loading...</span>
+              </div>
+            ) : (
+              "Sign In"
+            )}
           </button>
         </form>
         <div className="mt-4 text-center">

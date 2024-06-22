@@ -1,5 +1,3 @@
-// Sidebar.js
-
 import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
@@ -12,7 +10,7 @@ import {
   FaSignOutAlt,
   FaUserFriends,
   FaChartBar,
-  FaArchive, // Import FaArchive for Archive menu
+  FaArchive,
 } from "react-icons/fa";
 import { MdDashboard } from "react-icons/md";
 import Logo from "./assets/CompanyLogo.png";
@@ -22,14 +20,21 @@ const Sidebar = () => {
   const navigate = useNavigate();
   const [activeLink, setActiveLink] = useState(location.pathname);
   const [isOpen, setIsOpen] = useState(true);
+  const [isLoggingOut, setIsLoggingOut] = useState(false); // State for logout loading animation
 
   const handleLinkClick = (path) => {
     setActiveLink(path);
   };
 
   const handleLogout = () => {
-    // Perform logout actions (e.g., clear session, redirect)
-    navigate("/"); // Redirect to login page after logout
+    setIsLoggingOut(true); // Start logout animation
+
+    // Simulate logout process with a timeout
+    setTimeout(() => {
+      // Perform logout actions (e.g., clear session, redirect)
+      navigate("/"); // Redirect to login page after logout
+      setIsLoggingOut(false); // Stop logout animation after a short delay
+    }, 1500); // Simulate a delay for demo purposes
   };
 
   const toggleSidebar = () => {
@@ -183,9 +188,19 @@ const Sidebar = () => {
               <button
                 className="flex items-center p-4 rounded text-white w-full hover:bg-gray-200 hover:text-black"
                 onClick={handleLogout}
+                disabled={isLoggingOut} // Disable button while logging out
               >
-                <FaSignOutAlt className="flex-shrink-0 w-5 h-5 transition duration-75" />
-                <span className="ms-3 whitespace-nowrap">Log Out</span>
+                {isLoggingOut ? (
+                  <div className="flex items-center space-x-2">
+                    <div className="w-4 h-4 border-2 border-transparent rounded-full animate-spin"></div>
+                    <span>Logging Out...</span>
+                  </div>
+                ) : (
+                  <>
+                    <FaSignOutAlt className="flex-shrink-0 w-5 h-5 transition duration-75" />
+                    <span className="ms-3 whitespace-nowrap">Log Out</span>
+                  </>
+                )}
               </button>
             </li>
           </ul>
