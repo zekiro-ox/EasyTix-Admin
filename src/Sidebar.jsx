@@ -1,3 +1,5 @@
+// Sidebar.js
+
 import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
@@ -9,7 +11,8 @@ import {
   FaUserShield,
   FaSignOutAlt,
   FaUserFriends,
-  FaChartBar, // New icon for Sales Report
+  FaChartBar,
+  FaArchive, // Import FaArchive for Archive menu
 } from "react-icons/fa";
 import { MdDashboard } from "react-icons/md";
 import Logo from "./assets/CompanyLogo.png";
@@ -160,6 +163,22 @@ const Sidebar = () => {
               </Link>
             </li>
             {/* End of Sales Report Menu */}
+            {/* Archive Menu */}
+            <li>
+              <Link
+                to="/archive"
+                className={`flex items-center p-4 rounded ${
+                  activeLink === "/archive"
+                    ? "bg-gray-200 text-black"
+                    : "text-white hover:bg-gray-200 hover:text-black"
+                }`}
+                onClick={() => handleLinkClick("/archive")}
+              >
+                <FaArchive className="flex-shrink-0 w-5 h-5 transition duration-75" />
+                <span className="flex-1 ms-3 whitespace-nowrap">Archive</span>
+              </Link>
+            </li>
+            {/* End of Archive Menu */}
             <li>
               <button
                 className="flex items-center p-4 rounded text-white w-full hover:bg-gray-200 hover:text-black"
