@@ -212,7 +212,7 @@ const SalesReport = ({ salesData }) => {
               )}
               <button
                 onClick={downloadSalesReport}
-                className="p-2 border border-gray-300 rounded bg-blue-500 text-white hover:bg-blue-600 mt-2 lg:mt-0"
+                className="p-2 border border-gray-300 rounded bg-purple-600 text-white hover:bg-purple-700 mt-2 lg:mt-0"
               >
                 Download Excel
               </button>
