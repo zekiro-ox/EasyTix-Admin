@@ -23,15 +23,15 @@ const SalesReport = ({ data }) => {
   const averageTicketsPerDay = (totalTicketsSold / data.length).toFixed(2);
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
+    <div className="bg-gray-800 rounded-lg shadow-md p-6 text-white">
       <h2 className="text-2xl font-semibold mb-4">Sales Report</h2>
       <div className="mb-4">
-        <p className="font-medium text-gray-800">Total Ticket Sold:</p>
-        <p className="text-sm text-gray-500">{totalTicketsSold}</p>
+        <p className="font-medium text-gray-300">Total Ticket Sold:</p>
+        <p className="text-sm text-gray-400">{totalTicketsSold}</p>
       </div>
       <div className="mb-4">
-        <p className="font-medium text-gray-800">Ticket Sold for Each Type:</p>
-        <ul className="list-disc list-inside text-sm text-gray-500">
+        <p className="font-medium text-gray-300">Ticket Sold for Each Type:</p>
+        <ul className="list-disc list-inside text-sm text-gray-400">
           {Object.keys(ticketTypeCounts).map((ticketType) => (
             <li key={ticketType}>
               {ticketType}: {ticketTypeCounts[ticketType]}
@@ -40,14 +40,14 @@ const SalesReport = ({ data }) => {
         </ul>
       </div>
       <div className="mb-4">
-        <p className="font-medium text-gray-800">Revenue:</p>
-        <p className="text-sm text-gray-500">${totalRevenue}</p>
+        <p className="font-medium text-gray-300">Revenue:</p>
+        <p className="text-sm text-gray-400">${totalRevenue}</p>
       </div>
       <div>
-        <p className="font-medium text-gray-800">
+        <p className="font-medium text-gray-300">
           Average Ticket Sold Per Day:
         </p>
-        <p className="text-sm text-gray-500">{averageTicketsPerDay}</p>
+        <p className="text-sm text-gray-400">{averageTicketsPerDay}</p>
       </div>
     </div>
   );

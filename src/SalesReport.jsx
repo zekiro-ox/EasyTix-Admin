@@ -93,7 +93,7 @@ const SalesReport = ({ salesData }) => {
         title: {
           display: true,
           text: "Date",
-          color: "#6b7280",
+          color: "#D1D5DB", // Light gray for text color in dark mode
           font: {
             size: 16,
             weight: "bold",
@@ -101,7 +101,7 @@ const SalesReport = ({ salesData }) => {
           },
         },
         ticks: {
-          color: "#6b7280",
+          color: "#D1D5DB", // Light gray for ticks in dark mode
           font: {
             size: 14,
             family: "'Roboto', sans-serif",
@@ -112,7 +112,7 @@ const SalesReport = ({ salesData }) => {
         title: {
           display: true,
           text: "Amount",
-          color: "#6b7280",
+          color: "#D1D5DB", // Light gray for text color in dark mode
           font: {
             size: 16,
             weight: "bold",
@@ -120,7 +120,7 @@ const SalesReport = ({ salesData }) => {
           },
         },
         ticks: {
-          color: "#6b7280",
+          color: "#D1D5DB", // Light gray for ticks in dark mode
           font: {
             size: 14,
             family: "'Roboto', sans-serif",
@@ -145,23 +145,23 @@ const SalesReport = ({ salesData }) => {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row min-h-screen">
+    <div className="flex flex-col lg:flex-row min-h-screen bg-gray-900 text-white">
       <Sidebar />
       <div className="flex-1 flex flex-col pt-16 pr-5 pl-5 pb-5 lg:ml-64">
-        <div className="bg-gradient-to-r from-purple-500 to-purple-400 p-6 rounded-t-2xl">
-          <div className="bg-white p-8 rounded-2xl shadow-2xl w-full lg:w-96">
+        <div className="bg-purple-800 p-6 rounded-t-2xl">
+          <div className="bg-gray-900 p-8 rounded-2xl shadow-2xl w-full lg:w-96">
             <h2 className="text-3xl mb-4 text-center font-bold text-purple-600">
               Sales Report
             </h2>
-            <p className="text-gray-700 text-center">
+            <p className="text-gray-300 text-center">
               Overview of tickets sold and revenue.
             </p>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-2xl shadow-2xl mt-6">
+        <div className="bg-gray-800 p-6 rounded-2xl shadow-2xl mt-6">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-2xl font-bold text-purple-600">
+            <h3 className="text-2xl font-bold text-purple-400">
               Tickets Sold and Revenue Over Time
             </h3>
             <div className="flex flex-col lg:flex-row items-center space-y-2 lg:space-y-0 lg:space-x-4">
@@ -171,7 +171,7 @@ const SalesReport = ({ salesData }) => {
                   setFilter(e.target.value);
                   setCurrentMonth(0); // Reset currentMonth when changing filters
                 }}
-                className="p-2 border border-gray-300 rounded"
+                className="p-2 border border-gray-600 rounded bg-gray-700"
               >
                 <option value="weekly">Weekly</option>
                 <option value="monthly">Monthly</option>
@@ -181,13 +181,13 @@ const SalesReport = ({ salesData }) => {
                   <button
                     onClick={() => handlePeriodChange(-1)}
                     disabled={currentMonth === 0} // Disable if it's the current week
-                    className="p-2 border border-gray-300 rounded bg-gray-200 hover:bg-gray-300"
+                    className="p-2 border border-gray-600 rounded bg-gray-600 hover:bg-gray-700"
                   >
                     Next
                   </button>
                   <button
                     onClick={() => handlePeriodChange(1)}
-                    className="p-2 border border-gray-300 rounded bg-gray-200 hover:bg-gray-300"
+                    className="p-2 border border-gray-600 rounded bg-gray-600 hover:bg-gray-700"
                   >
                     Previous
                   </button>
@@ -198,13 +198,13 @@ const SalesReport = ({ salesData }) => {
                   <button
                     onClick={() => handlePeriodChange(1)}
                     disabled={currentMonth === 0} // Disable if it's the current month
-                    className="p-2 border border-gray-300 rounded bg-gray-200 hover:bg-gray-300"
+                    className="p-2 border border-gray-600 rounded bg-gray-600 hover:bg-gray-700"
                   >
                     Next
                   </button>
                   <button
                     onClick={() => handlePeriodChange(-1)}
-                    className="p-2 border border-gray-300 rounded bg-gray-200 hover:bg-gray-300"
+                    className="p-2 border border-gray-600 rounded bg-gray-600 hover:bg-gray-700"
                   >
                     Previous
                   </button>
@@ -212,7 +212,7 @@ const SalesReport = ({ salesData }) => {
               )}
               <button
                 onClick={downloadSalesReport}
-                className="p-2 border border-gray-300 rounded bg-purple-600 text-white hover:bg-purple-700 mt-2 lg:mt-0"
+                className="p-2 border border-gray-600 rounded bg-purple-600 text-white hover:bg-purple-700 mt-2 lg:mt-0"
               >
                 Download Excel
               </button>
@@ -223,30 +223,30 @@ const SalesReport = ({ salesData }) => {
               <Line data={chartData} options={chartOptions} />
             </div>
             <div className="w-full lg:w-1/3 mt-6 lg:mt-0">
-              <div className="bg-white p-6 rounded-2xl shadow-2xl">
-                <h3 className="text-2xl mb-4 text-center font-bold text-purple-600">
+              <div className="bg-gray-700 p-6 rounded-2xl shadow-2xl">
+                <h3 className="text-2xl mb-4 text-center font-bold text-purple-400">
                   Sales Summary
                 </h3>
                 <div className="space-y-4">
-                  <div className="bg-gray-100 p-4 rounded-lg">
-                    <h4 className="text-lg font-semibold text-purple-600">
+                  <div className="bg-gray-600 p-4 rounded-lg">
+                    <h4 className="text-lg font-semibold text-purple-400">
                       Total Tickets Sold
                     </h4>
-                    <p className="text-gray-700">
+                    <p className="text-gray-300">
                       {totalTicketsSold} tickets sold
                     </p>
                   </div>
-                  <div className="bg-gray-100 p-4 rounded-lg">
-                    <h4 className="text-lg font-semibold text-purple-600">
+                  <div className="bg-gray-600 p-4 rounded-lg">
+                    <h4 className="text-lg font-semibold text-purple-400">
                       Revenue
                     </h4>
-                    <p className="text-gray-700">${totalRevenue.toFixed(2)}</p>
+                    <p className="text-gray-300">${totalRevenue.toFixed(2)}</p>
                   </div>
-                  <div className="bg-gray-100 p-4 rounded-lg">
-                    <h4 className="text-lg font-semibold text-purple-600">
+                  <div className="bg-gray-600 p-4 rounded-lg">
+                    <h4 className="text-lg font-semibold text-purple-400">
                       Average Tickets Sold per Day
                     </h4>
-                    <p className="text-gray-700">
+                    <p className="text-gray-300">
                       {averageTicketsSoldPerDay.toFixed(2)} tickets
                     </p>
                   </div>

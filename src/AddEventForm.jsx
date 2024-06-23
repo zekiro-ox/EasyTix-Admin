@@ -57,7 +57,7 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
   };
 
   return (
-    <div className="mb-4 bg-white rounded-lg shadow-md p-4">
+    <div className="mb-4 bg-gray-800 rounded-lg shadow-md p-4 text-white">
       <h2 className="text-lg font-medium mb-4">
         {event ? "Edit Event" : "Add New Event"}
       </h2>
@@ -65,7 +65,7 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
         <div className="col-span-2 sm:col-span-1">
           <label
             htmlFor="name"
-            className="block text-sm font-medium text-gray-700"
+            className="block text-sm font-medium text-gray-300"
           >
             Name
           </label>
@@ -73,7 +73,7 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
             type="text"
             id="name"
             name="name"
-            className="mt-1 block w-full px-3 py-2 rounded-md border border-gray-300 shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            className="mt-1 block w-full px-3 py-2 rounded-md border border-gray-600 shadow-sm focus:outline-none focus:ring focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-700 text-white"
             placeholder="Event Name"
             value={newEvent.name}
             onChange={handleInputChange}
@@ -82,15 +82,15 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
         <div className="col-span-2 sm:col-span-1">
           <label
             htmlFor="description"
-            className="block text-sm font-medium text-gray-700"
+            className="block text-sm font-medium text-gray-300"
           >
             Description
           </label>
           <textarea
             id="description"
             name="description"
-            rows="4" // Adjust rows as needed
-            className="mt-1 block w-full px-3 py-2 rounded-md border border-gray-300 shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            rows="4"
+            className="mt-1 block w-full px-3 py-2 rounded-md border border-gray-600 shadow-sm focus:outline-none focus:ring focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-700 text-white"
             placeholder="Event Description"
             value={newEvent.description}
             onChange={handleInputChange}
@@ -99,7 +99,7 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
         <div className="col-span-2 sm:col-span-1">
           <label
             htmlFor="startDate"
-            className="block text-sm font-medium text-gray-700"
+            className="block text-sm font-medium text-gray-300"
           >
             Start Date
           </label>
@@ -107,7 +107,7 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
             type="date"
             id="startDate"
             name="startDate"
-            className="mt-1 block w-full px-3 py-2 rounded-md border border-gray-300 shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            className="mt-1 block w-full px-3 py-2 rounded-md border border-gray-600 shadow-sm focus:outline-none focus:ring focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-700 text-white"
             value={newEvent.startDate}
             onChange={handleInputChange}
           />
@@ -115,7 +115,7 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
         <div className="col-span-2 sm:col-span-1">
           <label
             htmlFor="endDate"
-            className="block text-sm font-medium text-gray-700"
+            className="block text-sm font-medium text-gray-300"
           >
             End Date
           </label>
@@ -123,7 +123,7 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
             type="date"
             id="endDate"
             name="endDate"
-            className="mt-1 block w-full px-3 py-2 rounded-md border border-gray-300 shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            className="mt-1 block w-full px-3 py-2 rounded-md border border-gray-600 shadow-sm focus:outline-none focus:ring focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-700 text-white"
             value={newEvent.endDate}
             onChange={handleInputChange}
           />
@@ -131,7 +131,7 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
         <div className="col-span-2 sm:col-span-1">
           <label
             htmlFor="startTime"
-            className="block text-sm font-medium text-gray-700"
+            className="block text-sm font-medium text-gray-300"
           >
             Start Time
           </label>
@@ -139,7 +139,7 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
             type="time"
             id="startTime"
             name="startTime"
-            className="mt-1 block w-full px-3 py-2 rounded-md border border-gray-300 shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            className="mt-1 block w-full px-3 py-2 rounded-md border border-gray-600 shadow-sm focus:outline-none focus:ring focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-700 text-white"
             value={newEvent.startTime}
             onChange={handleInputChange}
           />
@@ -147,7 +147,7 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
         <div className="col-span-2 sm:col-span-1">
           <label
             htmlFor="endTime"
-            className="block text-sm font-medium text-gray-700"
+            className="block text-sm font-medium text-gray-300"
           >
             End Time
           </label>
@@ -155,7 +155,7 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
             type="time"
             id="endTime"
             name="endTime"
-            className="mt-1 block w-full px-3 py-2 rounded-md border border-gray-300 shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            className="mt-1 block w-full px-3 py-2 rounded-md border border-gray-600 shadow-sm focus:outline-none focus:ring focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-700 text-white"
             value={newEvent.endTime}
             onChange={handleInputChange}
           />
@@ -163,7 +163,7 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
         <div className="col-span-2 sm:col-span-1">
           <label
             htmlFor="venue"
-            className="block text-sm font-medium text-gray-700"
+            className="block text-sm font-medium text-gray-300"
           >
             Venue
           </label>
@@ -171,7 +171,7 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
             type="text"
             id="venue"
             name="venue"
-            className="mt-1 block w-full px-3 py-2 rounded-md border border-gray-300 shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            className="mt-1 block w-full px-3 py-2 rounded-md border border-gray-600 shadow-sm focus:outline-none focus:ring focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-700 text-white"
             placeholder="Event Venue"
             value={newEvent.venue}
             onChange={handleInputChange}
@@ -180,7 +180,7 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
         <div className="col-span-2 sm:col-span-1">
           <label
             htmlFor="eventPoster"
-            className="block text-sm font-medium text-gray-700"
+            className="block text-sm font-medium text-gray-300"
           >
             Event Poster
           </label>
@@ -188,7 +188,7 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
             type="file"
             id="eventPoster"
             name="eventPoster"
-            className="mt-1 block w-full px-3 py-2 rounded-md border border-gray-300 shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            className="mt-1 block w-full px-3 py-2 rounded-md border border-gray-600 shadow-sm focus:outline-none focus:ring focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-700 text-white"
             accept="image/*"
             onChange={handleFileChange}
           />
@@ -196,7 +196,7 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
         <div className="col-span-2 sm:col-span-1">
           <label
             htmlFor="seatMap"
-            className="block text-sm font-medium text-gray-700"
+            className="block text-sm font-medium text-gray-300"
           >
             Seat Map
           </label>
@@ -204,7 +204,7 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
             type="file"
             id="seatMap"
             name="seatMap"
-            className="mt-1 block w-full px-3 py-2 rounded-md border border-gray-300 shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            className="mt-1 block w-full px-3 py-2 rounded-md border border-gray-600 shadow-sm focus:outline-none focus:ring focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-700 text-white"
             accept=".pdf,.jpg,.png"
             onChange={handleFileChange}
           />
@@ -213,7 +213,7 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
       <div className="mt-4 flex justify-end">
         <button
           onClick={handleCancel}
-          className="px-4 py-2 bg-gray-400 text-white rounded-md hover:bg-gray-500 focus:outline-none focus:ring focus:ring-gray-300 mr-2"
+          className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 focus:outline-none focus:ring focus:ring-gray-300 mr-2"
         >
           Cancel
         </button>

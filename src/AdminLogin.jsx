@@ -33,27 +33,27 @@ const AdminLogin = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-purple-50">
-      <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-900">
+      <div className="bg-gray-800 p-8 rounded-lg shadow-lg w-full max-w-md">
         {/* Logo section */}
         <div className="flex items-center justify-center mb-8">
           <img src={Logo} alt="Company Logo" className="h-20 w-auto" />
         </div>
-        <h2 className="text-2xl font-bold text-purple-600 text-center">
+        <h2 className="text-2xl font-bold text-purple-400 text-center mb-4">
           Admin Login
         </h2>
         <form className="mt-6" onSubmit={handleSubmit}>
           <div className="mb-4">
             <label
               htmlFor="email"
-              className="block text-sm font-medium text-gray-700"
+              className="block text-sm font-medium text-gray-300"
             >
               Email
             </label>
             <input
               type="email"
               id="email"
-              className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500"
+              className="mt-1 block w-full px-4 py-2 border border-gray-600 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 bg-gray-700 text-white"
               placeholder="Enter your email"
               required
               value={email}
@@ -63,7 +63,7 @@ const AdminLogin = () => {
           <div className="mb-4">
             <label
               htmlFor="password"
-              className="block text-sm font-medium text-gray-700"
+              className="block text-sm font-medium text-gray-300"
             >
               Password
             </label>
@@ -71,7 +71,7 @@ const AdminLogin = () => {
               <input
                 type={passwordVisible ? "text" : "password"}
                 id="password"
-                className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500"
+                className="mt-1 block w-full px-4 py-2 border border-gray-600 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 bg-gray-700 text-white"
                 placeholder="Enter your password"
                 required
                 value={password}
@@ -84,7 +84,7 @@ const AdminLogin = () => {
               >
                 {passwordVisible ? (
                   <svg
-                    className="h-6 w-6 text-gray-500"
+                    className="h-6 w-6 text-gray-400"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -99,7 +99,7 @@ const AdminLogin = () => {
                   </svg>
                 ) : (
                   <svg
-                    className="h-6 w-6 text-gray-500"
+                    className="h-6 w-6 text-gray-400"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -122,11 +122,11 @@ const AdminLogin = () => {
                 id="remember-me"
                 name="remember-me"
                 type="checkbox"
-                className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
+                className="h-4 w-4 text-purple-400 focus:ring-purple-500 border-gray-300 rounded"
               />
               <label
                 htmlFor="remember-me"
-                className="ml-2 block text-sm text-gray-900"
+                className="ml-2 block text-sm text-gray-300"
               >
                 Remember me
               </label>
@@ -169,7 +169,7 @@ const AdminLogin = () => {
         <div className="mt-4 text-center">
           <Link
             to="/organizer-login"
-            className="font-medium text-purple-600 hover:text-purple-500"
+            className="font-medium text-purple-400 hover:text-purple-300"
           >
             Organizer? Login here
           </Link>

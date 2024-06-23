@@ -69,16 +69,16 @@ const OrganizerComponent = () => {
   );
 
   return (
-    <div className="flex flex-col lg:flex-row min-h-screen bg-purple-50">
+    <div className="flex flex-col lg:flex-row min-h-screen bg-gray-900 text-gray-100">
       <Sidebar />
       <div className="flex-1 flex flex-col pt-16 pr-5 pl-5 pb-5 lg:ml-64">
-        <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="bg-gray-800 rounded-lg shadow-md p-6">
           <div className="mb-4 flex flex-col lg:flex-row items-start lg:items-center justify-between">
             <div className="relative flex-1 w-full lg:w-auto mb-4 lg:mb-0 lg:mr-4">
               <div className="relative">
                 <input
                   type="text"
-                  className="w-full px-4 py-2 rounded-lg border border-gray-200 shadow-sm focus:outline-none focus:ring focus:ring-indigo-200"
+                  className="w-full px-4 py-2 rounded-lg border border-gray-700 shadow-sm focus:outline-none focus:ring focus:ring-indigo-200 bg-gray-700 text-gray-100"
                   placeholder="Search organizers..."
                   value={searchTerm}
                   onChange={handleSearch}
@@ -90,7 +90,7 @@ const OrganizerComponent = () => {
             </div>
             <button
               onClick={() => setShowAddForm(true)}
-              className="flex items-center px-4 py-2 rounded-lg bg-purple-600 text-white hover:bg-purple-700 focus:outline-none focus:ring focus:ring-purple-200"
+              className="flex items-center px-4 py-2 rounded-lg bg-purple-800 text-white hover:bg-purple-700 focus:outline-none focus:ring focus:ring-purple-200"
             >
               <FaPlus className="mr-2" />
               Add Organizer
@@ -113,8 +113,8 @@ const OrganizerComponent = () => {
           )}
 
           <div className="overflow-x-auto">
-            <table className="min-w-full bg-white rounded-lg shadow-md overflow-hidden">
-              <thead className="bg-purple-600 text-white">
+            <table className="min-w-full bg-gray-800 rounded-lg shadow-md overflow-hidden">
+              <thead className="bg-purple-800 text-white">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium tracking-wider">
                     ID
@@ -125,33 +125,33 @@ const OrganizerComponent = () => {
                   <th className="px-6 py-3 text-left text-xs font-medium tracking-wider">
                     Email
                   </th>
-                  <th className="px-6 py-3 text-left text-xs                     font-medium tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium tracking-wider">
                     Action
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+              <tbody className="divide-y divide-gray-700">
                 {filteredOrganizers.map((organizer) => (
                   <tr key={organizer.id}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
                       {organizer.id}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
                       {organizer.name}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
                       {organizer.email}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
                       <button
-                        className="flex items-center text-indigo-600 hover:text-indigo-900 mr-2"
+                        className="flex items-center text-indigo-400 hover:text-indigo-600 mr-2"
                         onClick={() => openEditForm(organizer.id)}
                       >
                         <FaEdit className="mr-1" />
                         Edit
                       </button>
                       <button
-                        className="flex items-center text-red-600 hover:text-red-900"
+                        className="flex items-center text-red-400 hover:text-red-600"
                         onClick={() => handleDeleteOrganizer(organizer.id)}
                       >
                         <FaTrash className="mr-1" />

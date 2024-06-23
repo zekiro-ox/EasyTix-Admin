@@ -65,8 +65,8 @@ const Sidebar = () => {
         } sm:translate-x-0`}
         aria-label="Sidebar"
         style={{
-          backgroundImage: "linear-gradient(to bottom, #a78bfa, #4c1d95)",
-          // Updated gradient background color to purple theme
+          backgroundImage: "linear-gradient(to bottom, #4B0082, #4B0082)",
+          // Updated gradient background color to darker purple theme
         }}
       >
         <div className="h-full px-3 py-4 overflow-y-auto m-2">

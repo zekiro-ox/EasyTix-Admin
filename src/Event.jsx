@@ -114,16 +114,16 @@ const EventComponent = () => {
   );
 
   return (
-    <div className="flex flex-col lg:flex-row min-h-screen bg-purple-50">
+    <div className="flex flex-col lg:flex-row min-h-screen bg-gray-900 text-white">
       <Sidebar />
       <div className="flex-1 flex flex-col pt-16 pr-5 pl-5 pb-5 lg:ml-64">
-        <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="bg-gray-800 rounded-lg shadow-md p-6">
           <div className="mb-4 flex flex-col lg:flex-row items-start lg:items-center justify-between">
             <div className="relative flex-1 w-full lg:w-auto mb-4 lg:mb-0 lg:mr-4">
               <div className="relative">
                 <input
                   type="text"
-                  className="w-full px-4 py-2 rounded-lg border border-gray-200 shadow-sm focus:outline-none focus:ring focus:ring-indigo-200"
+                  className="w-full px-4 py-2 rounded-lg border border-gray-600 shadow-sm focus:outline-none focus:ring focus:ring-indigo-200 bg-gray-600 text-white"
                   placeholder="Search events..."
                   value={searchTerm}
                   onChange={handleSearch}
@@ -135,7 +135,7 @@ const EventComponent = () => {
             </div>
             <button
               onClick={() => setShowAddForm(true)}
-              className="flex items-center px-4 py-2 rounded-lg bg-purple-600 text-white hover:bg-purple-700 focus:outline-none focus:ring focus:ring-purple-200"
+              className="flex items-center px-4 py-2 rounded-lg bg-purple-800 text-white hover:bg-purple-700 focus:outline-none focus:ring focus:ring-purple-200"
             >
               <FaPlus className="mr-2" />
               Add Event
@@ -163,8 +163,8 @@ const EventComponent = () => {
           )}
 
           <div className="overflow-x-auto">
-            <table className="min-w-full bg-white rounded-lg shadow-md overflow-hidden">
-              <thead className="bg-purple-600 text-white">
+            <table className="min-w-full bg-gray-700 rounded-lg shadow-md overflow-hidden">
+              <thead className="bg-purple-800 text-white">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium tracking-wider">
                     ID
@@ -186,22 +186,22 @@ const EventComponent = () => {
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+              <tbody className="divide-y divide-gray-600">
                 {filteredEvents.map((event) => (
                   <tr key={event.id}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
                       {event.id}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
                       {event.name}
                     </td>
-                    <td className="px-6 py-4 whitespace-wrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-wrap text-sm text-gray-300">
                       {getFirstSentence(event.description)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
                       {event.venue}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
                       <Switch
                         onChange={() => toggleStatus(event.id)}
                         checked={event.status === "Active"}
@@ -209,9 +209,9 @@ const EventComponent = () => {
                         id={`status-switch-${event.id}`}
                       />
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
                       <button
-                        className="flex items-center text-indigo-600 hover:text-indigo-900 mr-2"
+                        className="flex items-center text-indigo-400 hover:text-indigo-600 mr-2"
                         onClick={() => handleArchive(event.id)}
                       >
                         <FaArchive className="mr-1" />
@@ -219,14 +219,14 @@ const EventComponent = () => {
                       </button>
                       <button
                         onClick={() => openEditForm(event.id)} // Open edit form
-                        className="flex items-center text-indigo-600 hover:text-indigo-900 mr-2"
+                        className="flex items-center text-indigo-400 hover:text-indigo-600 mr-2"
                       >
                         <FaEdit className="mr-1" />
                         Edit
                       </button>
                       <button
                         onClick={() => openDetails(event.id)} // Open details modal
-                        className="flex items-center text-indigo-600 hover:text-indigo-900"
+                        className="flex items-center text-indigo-400 hover:text-indigo-600"
                       >
                         <FaInfoCircle className="mr-1" />
                         View Details

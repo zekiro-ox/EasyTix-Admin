@@ -1,4 +1,3 @@
-// UsersComponent.jsx
 import React, { useState } from "react";
 import { FaSearch } from "react-icons/fa";
 import Sidebar from "./Sidebar";
@@ -39,16 +38,16 @@ const UsersComponent = () => {
   );
 
   return (
-    <div className="flex flex-col lg:flex-row min-h-screen bg-purple-50">
+    <div className="flex flex-col lg:flex-row min-h-screen bg-gray-900 text-gray-100">
       <Sidebar />
       <div className="flex-1 flex flex-col pt-16 pr-5 pl-5 pb-5 lg:ml-64">
-        <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="bg-gray-800 rounded-lg shadow-md p-6">
           <div className="mb-4 flex flex-col lg:flex-row items-start lg:items-center justify-between">
             <div className="relative flex-1 w-full lg:w-auto mb-4 lg:mb-0 lg:mr-4">
               <div className="relative">
                 <input
                   type="text"
-                  className="w-full px-4 py-2 rounded-lg border border-gray-200 shadow-sm focus:outline-none focus:ring focus:ring-indigo-200"
+                  className="w-full px-4 py-2 rounded-lg border border-gray-700 shadow-sm focus:outline-none focus:ring focus:ring-indigo-200 bg-gray-700 text-gray-100"
                   placeholder="Search users..."
                   value={searchTerm}
                   onChange={handleSearch}
@@ -61,8 +60,8 @@ const UsersComponent = () => {
           </div>
 
           <div className="overflow-x-auto">
-            <table className="min-w-full bg-white rounded-lg shadow-md overflow-hidden">
-              <thead className="bg-purple-600 text-white">
+            <table className="min-w-full bg-gray-800 rounded-lg shadow-md overflow-hidden">
+              <thead className="bg-purple-800 text-white">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium tracking-wider">
                     ID
@@ -90,31 +89,31 @@ const UsersComponent = () => {
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+              <tbody className="divide-y divide-gray-700">
                 {filteredUsers.map((user) => (
                   <tr key={user.id}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
                       {user.id}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
                       {user.name}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
                       {user.email}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
                       {user.event}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
                       {user.ticketType}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
                       {user.quantity}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
                       {user.amount}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
                       {user.status}
                     </td>
                   </tr>

@@ -103,16 +103,16 @@ const ArchiveComponent = () => {
   );
 
   return (
-    <div className="flex flex-col lg:flex-row min-h-screen bg-purple-50">
+    <div className="flex flex-col lg:flex-row min-h-screen bg-gray-900 text-white">
       <Sidebar />
       <div className="flex-1 flex flex-col pt-16 pr-5 pl-5 pb-5 lg:ml-64">
-        <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="bg-gray-800 rounded-lg shadow-md p-6">
           <div className="mb-4 flex flex-col lg:flex-row items-start lg:items-center justify-between">
             <div className="relative flex-1 w-full lg:w-auto mb-4 lg:mb-0 lg:mr-4">
               <div className="relative">
                 <input
                   type="text"
-                  className="w-full px-4 py-2 rounded-lg border border-gray-200 shadow-sm focus:outline-none focus:ring focus:ring-indigo-200"
+                  className="w-full px-4 py-2 rounded-lg border border-gray-600 shadow-sm focus:outline-none focus:ring focus:ring-indigo-200 bg-gray-700 text-white"
                   placeholder="Search archived events..."
                   value={searchTerm}
                   onChange={handleSearch}
@@ -128,14 +128,14 @@ const ArchiveComponent = () => {
             {filteredArchivedEvents.map((event) => (
               <div
                 key={event.id}
-                className="bg-white rounded-lg shadow-md p-4 flex items-center justify-between cursor-pointer hover:bg-gray-100"
+                className="bg-gray-800 rounded-lg shadow-md p-4 flex items-center justify-between cursor-pointer hover:bg-gray-700"
                 onClick={() => handleFolderClick(event.id)}
               >
                 <div className="flex items-center">
-                  <FaFolder className="text-purple-600 mr-2" />
+                  <FaFolder className="text-purple-400 mr-2" />
                   <div>
-                    <p className="font-medium text-gray-800">{event.name}</p>
-                    <p className="text-sm text-gray-500">{event.date}</p>
+                    <p className="font-medium text-gray-200">{event.name}</p>
+                    <p className="text-sm text-gray-300">{event.date}</p>
                   </div>
                 </div>
               </div>
@@ -146,7 +146,7 @@ const ArchiveComponent = () => {
         {/* Conditional Rendering based on selectedEvent */}
         {selectedEvent && (
           <div className="mt-8">
-            <h2 className="text-2xl font-semibold mb-4">
+            <h2 className="text-2xl font-bold mb-4 text-purple-400">
               Sales Report for {selectedEvent.name}
             </h2>
             <SalesReport data={selectedEvent.salesReport} />
@@ -155,7 +155,7 @@ const ArchiveComponent = () => {
 
         {selectedEvent && (
           <div className="mt-8">
-            <h2 className="text-2xl font-semibold mb-4">
+            <h2 className="text-2xl font-bold mb-4 text-purple-400">
               Participants for {selectedEvent.name}
             </h2>
             <UserList data={selectedEvent.participants} />

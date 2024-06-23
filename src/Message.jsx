@@ -44,7 +44,7 @@ const MessageComponent = () => {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row min-h-screen bg-purple-50">
+    <div className="flex flex-col lg:flex-row min-h-screen bg-gray-900 text-gray-100">
       <Sidebar />
       <div className="flex-1 flex flex-col pt-16 pr-5 pl-5 pb-5 lg:ml-64">
         {selectedMessage ? (
@@ -55,24 +55,24 @@ const MessageComponent = () => {
             setMessages={setMessages}
           />
         ) : (
-          <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="bg-gray-800 rounded-lg shadow-md p-6">
             <h1 className="text-2xl font-semibold mb-6">Inbox</h1>
             {messages.map((message) => (
               <div
                 key={message.id}
-                className={`bg-purple-100 rounded-lg p-4 mb-4 cursor-pointer ${
+                className={`bg-gray-700 rounded-lg p-4 mb-4 cursor-pointer ${
                   message.read ? "" : "font-semibold"
                 }`}
                 onClick={() => openChat(message)}
               >
                 <div className="flex justify-between items-center mb-2">
                   <div className="font-semibold">{message.sender}</div>
-                  <div className="text-gray-500 text-sm">
+                  <div className="text-gray-400 text-sm">
                     {new Date(message.timestamp).toLocaleString()}
                   </div>
                 </div>
                 <div className="font-medium">{message.subject}</div>
-                <div className="text-gray-600">{message.message}</div>
+                <div className="text-gray-300">{message.message}</div>
               </div>
             ))}
           </div>
