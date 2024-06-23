@@ -34,7 +34,7 @@ const Sidebar = () => {
       // Perform logout actions (e.g., clear session, redirect)
       navigate("/"); // Redirect to login page after logout
       setIsLoggingOut(false); // Stop logout animation after a short delay
-    }, 1500); // Simulate a delay for demo purposes
+    }, 3000); // Simulate a delay for demo purposes
   };
 
   const toggleSidebar = () => {
@@ -65,8 +65,8 @@ const Sidebar = () => {
         } sm:translate-x-0`}
         aria-label="Sidebar"
         style={{
-          backgroundImage: "linear-gradient(to bottom right, #6B46C1, #805AD5)",
-          // Set gradient background color to purple
+          backgroundImage: "linear-gradient(to bottom, #a78bfa, #4c1d95)",
+          // Updated gradient background color to purple theme
         }}
       >
         <div className="h-full px-3 py-4 overflow-y-auto m-2">
@@ -191,8 +191,27 @@ const Sidebar = () => {
                 disabled={isLoggingOut} // Disable button while logging out
               >
                 {isLoggingOut ? (
-                  <div className="flex items-center space-x-2">
-                    <div className="w-4 h-4 border-2 border-transparent rounded-full animate-spin"></div>
+                  <div className="flex items-center justify-center">
+                    <svg
+                      className="animate-spin h-5 w-5 mr-3 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V2.5a.5.5 0 00-1 0V4a8 8 0 018 8h1.5a.5.5 0 000-1H20a8 8 0 01-8 8v1.5a.5.5 0 001 0V20a8 8 0 01-8-8H2.5a.5.5 0 000 1H4z"
+                      ></path>
+                    </svg>
                     <span>Logging Out...</span>
                   </div>
                 ) : (
