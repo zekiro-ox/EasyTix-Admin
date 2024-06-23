@@ -8,6 +8,7 @@ import EventComponent from "./Event";
 import MessageComponent from "./Message";
 import UsersComponent from "./Users";
 import OrganizerComponent from "./Organizer";
+import ArchiveComponent from "./Archive";
 import "./App.css";
 
 const salesData = Array.from({ length: 150 }, (_, i) => {
@@ -34,6 +35,7 @@ function App() {
         <Route path="/messages" element={<MessageComponent />} />
         <Route path="/users" element={<UsersComponent />} />
         <Route path="/organizer" element={<OrganizerComponent />} />
+        <Route path="/archive" element={<ArchiveComponent />} />
         <Route
           path="/sales-report"
           element={<SalesReport salesData={salesData} />}

@@ -2,24 +2,33 @@ import React, { useState } from "react";
 import { FaSearch, FaPlus, FaEdit, FaTrash } from "react-icons/fa";
 import Sidebar from "./Sidebar";
 import AddOrganizerForm from "./AddOrganizerForm";
+import EditOrganizerForm from "./EditOrganizerForm";
 
 const OrganizerComponent = () => {
   const [organizers, setOrganizers] = useState([
     {
       id: 1,
+      firstName: "John",
+      lastName: "Doe",
       name: "John Doe",
       email: "john.doe@example.com",
+      password: "password1",
     },
     {
       id: 2,
+      firstName: "Jane",
+      lastName: "Smith",
       name: "Jane Smith",
       email: "jane.smith@example.com",
+      password: "password2",
     },
     // Add more organizers as needed
   ]);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [showAddForm, setShowAddForm] = useState(false);
+  const [showEditForm, setShowEditForm] = useState(false);
+  const [currentOrganizer, setCurrentOrganizer] = useState(null);
 
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
@@ -34,6 +43,14 @@ const OrganizerComponent = () => {
     setShowAddForm(false); // Hide the form after adding organizer
   };
 
+  const handleSaveOrganizer = (updatedOrganizer) => {
+    const updatedOrganizers = organizers.map((organizer) =>
+      organizer.id === updatedOrganizer.id ? updatedOrganizer : organizer
+    );
+    setOrganizers(updatedOrganizers);
+    setShowEditForm(false); // Hide the form after saving changes
+  };
+
   const handleDeleteOrganizer = (organizerId) => {
     const updatedOrganizers = organizers.filter(
       (organizer) => organizer.id !== organizerId
@@ -42,7 +59,9 @@ const OrganizerComponent = () => {
   };
 
   const openEditForm = (organizerId) => {
-    // Logic to open edit form
+    const organizer = organizers.find((org) => org.id === organizerId);
+    setCurrentOrganizer(organizer);
+    setShowEditForm(true);
   };
 
   const filteredOrganizers = organizers.filter((organizer) =>
@@ -85,6 +104,14 @@ const OrganizerComponent = () => {
             />
           )}
 
+          {showEditForm && (
+            <EditOrganizerForm
+              organizer={currentOrganizer}
+              onSaveOrganizer={handleSaveOrganizer}
+              onCancel={() => setShowEditForm(false)}
+            />
+          )}
+
           <div className="overflow-x-auto">
             <table className="min-w-full bg-white rounded-lg shadow-md overflow-hidden">
               <thead className="bg-purple-600 text-white">
@@ -98,7 +125,7 @@ const OrganizerComponent = () => {
                   <th className="px-6 py-3 text-left text-xs font-medium tracking-wider">
                     Email
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs                     font-medium tracking-wider">
                     Action
                   </th>
                 </tr>
