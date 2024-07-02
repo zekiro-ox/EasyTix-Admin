@@ -9,6 +9,8 @@ import MessageComponent from "./Message";
 import UsersComponent from "./Users";
 import OrganizerComponent from "./Organizer";
 import ArchiveComponent from "./Archive";
+import OrganizerDashboard from "./OrganizerDashboard";
+
 import "./App.css";
 
 const salesData = Array.from({ length: 150 }, (_, i) => {
@@ -42,6 +44,7 @@ function App() {
         />{" "}
         {/* Add SalesReport route */}
         <Route path="/" element={<AdminLogin />} />
+        <Route path="/organizer-dashboard" element={<OrganizerDashboard />} />
       </Routes>
     </Router>
   );
