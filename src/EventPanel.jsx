@@ -1,7 +1,10 @@
 import React, { useState } from "react";
 import { FaArrowLeft } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
-const EventPanel = ({ event, onBack }) => {
+const EventPanel = ({ event }) => {
+  const navigate = useNavigate();
+
   const [registeredUsers] = useState([
     {
       id: 1,
@@ -45,19 +48,29 @@ const EventPanel = ({ event, onBack }) => {
       <header className="flex items-center justify-between p-4 bg-gray-800">
         <button
           className="flex items-center text-white text-sm font-semibold mr-4 md:mr-8"
-          onClick={onBack}
+          onClick={() => navigate(-1)}
         >
           <FaArrowLeft className="mr-2" />
           Back
         </button>
-        <h1 className="text-xl md:text-2xl font-bold">{event.name} Details</h1>
+        {event && (
+          <h1 className="text-xl md:text-2xl font-bold">
+            {event.name} Details
+          </h1>
+        )}
         <div className="w-10"></div>
       </header>
       <main className="flex flex-col items-center p-4 md:p-8">
-        <h2 className="text-2xl md:text-4xl font-bold mb-4 md:mb-6">
-          {event.name}
-        </h2>
-        <p className="text-base md:text-lg mb-4 md:mb-6">{event.description}</p>
+        {event && (
+          <>
+            <h2 className="text-2xl md:text-4xl font-bold mb-4 md:mb-6">
+              {event.name}
+            </h2>
+            <p className="text-base md:text-lg mb-4 md:mb-6">
+              {event.description}
+            </p>
+          </>
+        )}
 
         <div className="w-full max-w-lg mb-4 md:mb-6">
           <div className="relative flex items-center">
@@ -71,7 +84,7 @@ const EventPanel = ({ event, onBack }) => {
           </div>
         </div>
 
-        <div className="w-full max-w-screen-lg overflow-x-auto">
+        <div className="w-full overflow-x-auto">
           <table className="w-full bg-gray-800 rounded-lg overflow-hidden">
             <thead className="text-white">
               <tr>

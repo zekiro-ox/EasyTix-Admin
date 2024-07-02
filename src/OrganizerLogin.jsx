@@ -1,32 +1,61 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import Logo from "./assets/CompanyLogo.png";
+import Logo from "./assets/CompanyLogo.png"; // Adjust the path as per your project structure
 
 const OrganizerLogin = () => {
+  const [passwordVisible, setPasswordVisible] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [passwordVisible, setPasswordVisible] = useState(false);
-  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false); // State for loading animation
+  const [showIncorrectPassword, setShowIncorrectPassword] = useState(false); // State for showing incorrect password message
+  const [rememberMe, setRememberMe] = useState(false); // State for remember me checkbox
+  const navigate = useNavigate(); // Initialize useNavigate hook
 
-  const navigate = useNavigate();
+  useEffect(() => {
+    const storedEmail = localStorage.getItem("organizerEmail");
+    const storedPassword = localStorage.getItem("organizerPassword");
+    if (storedEmail && storedPassword) {
+      setEmail(storedEmail);
+      setPassword(storedPassword);
+      setRememberMe(true);
+    }
+  }, []);
 
   const togglePasswordVisibility = () => {
     setPasswordVisible(!passwordVisible);
   };
 
-  const handleLogin = (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
+    setIsLoading(true); // Start loading animation
 
-    // Dummy account credentials
-    const dummyEmail = "organizer@example.com";
-    const dummyPassword = "password123";
+    // Replace with actual authentication logic (e.g., API call, authentication service)
+    const mockEmail = "organizer@example.com";
+    const mockPassword = "password";
 
-    if (email === dummyEmail && password === dummyPassword) {
-      // Redirect to organizer dashboard or any other page
-      navigate("/organizer-dashboard");
-    } else {
-      setError("Invalid email or password");
-    }
+    setTimeout(() => {
+      if (email === mockEmail && password === mockPassword) {
+        setIsLoggedIn(true);
+        navigate("/organizer-dashboard"); // Navigate to organizer dashboard on successful login
+
+        // Remember me functionality
+        if (rememberMe) {
+          localStorage.setItem("organizerEmail", email);
+          localStorage.setItem("organizerPassword", password);
+        } else {
+          localStorage.removeItem("organizerEmail");
+          localStorage.removeItem("organizerPassword");
+        }
+      } else {
+        setShowIncorrectPassword(true); // Show incorrect password message
+      }
+      setIsLoading(false); // Stop loading animation after a short delay
+    }, 3000); // Simulate a delay for demo purposes
+  };
+
+  const handleRememberMeChange = () => {
+    setRememberMe(!rememberMe);
   };
 
   return (
@@ -36,11 +65,10 @@ const OrganizerLogin = () => {
         <div className="flex items-center justify-center mb-8">
           <img src={Logo} alt="Company Logo" className="h-20 w-auto" />
         </div>
-        <h2 className="text-2xl font-bold text-red-600 text-center">
+        <h2 className="text-2xl font-bold text-purple-400 text-center mb-4">
           Organizer Login
         </h2>
-        {error && <div className="text-red-600 text-center mb-4">{error}</div>}
-        <form className="mt-6" onSubmit={handleLogin}>
+        <form className="mt-6" onSubmit={handleSubmit}>
           <div className="mb-4">
             <label
               htmlFor="email"
@@ -51,11 +79,11 @@ const OrganizerLogin = () => {
             <input
               type="email"
               id="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 block w-full px-4 py-2 border border-gray-700 bg-gray-700 text-white rounded-md shadow-sm focus:ring-red-500 focus:border-red-500"
+              className="mt-1 block w-full px-4 py-2 border border-gray-600 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 bg-gray-700 text-white"
               placeholder="Enter your email"
               required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
             />
           </div>
           <div className="mb-4">
@@ -69,11 +97,11 @@ const OrganizerLogin = () => {
               <input
                 type={passwordVisible ? "text" : "password"}
                 id="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="mt-1 block w-full px-4 py-2 border border-gray-700 bg-gray-700 text-white rounded-md shadow-sm focus:ring-red-500 focus:border-red-500"
+                className="mt-1 block w-full px-4 py-2 border border-gray-600 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 bg-gray-700 text-white"
                 placeholder="Enter your password"
                 required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
               />
               <button
                 type="button"
@@ -82,7 +110,7 @@ const OrganizerLogin = () => {
               >
                 {passwordVisible ? (
                   <svg
-                    className="h-6 w-6 text-gray-500"
+                    className="h-6 w-6 text-gray-400"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -97,7 +125,7 @@ const OrganizerLogin = () => {
                   </svg>
                 ) : (
                   <svg
-                    className="h-6 w-6 text-gray-500"
+                    className="h-6 w-6 text-gray-400"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -114,13 +142,20 @@ const OrganizerLogin = () => {
               </button>
             </div>
           </div>
+          {showIncorrectPassword && (
+            <p className="text-red-500 text-sm mb-4">
+              Invalid email or password.
+            </p>
+          )}
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center">
               <input
                 id="remember-me"
                 name="remember-me"
                 type="checkbox"
-                className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-700 bg-gray-700 rounded"
+                className="h-4 w-4 text-purple-400 focus:ring-purple-500 border-gray-300 rounded"
+                checked={rememberMe}
+                onChange={handleRememberMeChange}
               />
               <label
                 htmlFor="remember-me"
@@ -132,15 +167,42 @@ const OrganizerLogin = () => {
           </div>
           <button
             type="submit"
-            className="w-full py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+            className="w-full py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+            disabled={isLoading} // Disable button while loading
           >
-            Sign In
+            {isLoading ? (
+              <div className="flex items-center justify-center">
+                <svg
+                  className="animate-spin h-5 w-5 mr-3 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V2.5a.5.5 0 00-1 0V4a8 8 0 018 8h1.5a.5.5 0 000-1H20a8 8 0 01-8 8v1.5a.5.5 0 001 0V20a8 8 0 01-8-8H2.5a.5.5 0 000 1H4z"
+                  ></path>
+                </svg>
+                <span>Loading...</span>
+              </div>
+            ) : (
+              "Sign In"
+            )}
           </button>
         </form>
         <div className="mt-4 text-center">
           <Link
             to="/admin-login"
-            className="font-medium text-red-600 hover:text-red-500"
+            className="font-medium text-purple-400 hover:text-purple-300"
           >
             Admin? Login here
           </Link>

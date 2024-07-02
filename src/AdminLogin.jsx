@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Logo from "./assets/CompanyLogo.png"; // Adjust the path as per your project structure
 
@@ -8,11 +8,24 @@ const AdminLogin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false); // State for loading animation
-
+  const [error, setError] = useState(""); // State for login error message
+  const [rememberMe, setRememberMe] = useState(false); // State for Remember Me checkbox
   const navigate = useNavigate(); // Initialize useNavigate hook
+
+  useEffect(() => {
+    const storedEmail = localStorage.getItem("rememberedEmail");
+    if (storedEmail) {
+      setEmail(storedEmail);
+      setRememberMe(true);
+    }
+  }, []);
 
   const togglePasswordVisibility = () => {
     setPasswordVisible(!passwordVisible);
+  };
+
+  const handleRememberMe = (e) => {
+    setRememberMe(e.target.checked);
   };
 
   const handleSubmit = (e) => {
@@ -26,7 +39,14 @@ const AdminLogin = () => {
     setTimeout(() => {
       if (email === mockEmail && password === mockPassword) {
         setIsLoggedIn(true);
+        if (rememberMe) {
+          localStorage.setItem("rememberedEmail", email); // Remember email if checked
+        } else {
+          localStorage.removeItem("rememberedEmail"); // Clear remembered email if unchecked
+        }
         navigate("/dashboard"); // Navigate to dashboard on successful login
+      } else {
+        setError("Invalid email or password."); // Set error message for wrong credentials
       }
       setIsLoading(false); // Stop loading animation after a short delay
     }, 3000); // Simulate a delay for demo purposes
@@ -116,6 +136,7 @@ const AdminLogin = () => {
               </button>
             </div>
           </div>
+          {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center">
               <input
@@ -123,6 +144,8 @@ const AdminLogin = () => {
                 name="remember-me"
                 type="checkbox"
                 className="h-4 w-4 text-purple-400 focus:ring-purple-500 border-gray-300 rounded"
+                checked={rememberMe}
+                onChange={handleRememberMe}
               />
               <label
                 htmlFor="remember-me"

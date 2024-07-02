@@ -10,6 +10,7 @@ import UsersComponent from "./Users";
 import OrganizerComponent from "./Organizer";
 import ArchiveComponent from "./Archive";
 import OrganizerDashboard from "./OrganizerDashboard";
+import EventPanel from "./EventPanel";
 
 import "./App.css";
 
@@ -45,6 +46,7 @@ function App() {
         {/* Add SalesReport route */}
         <Route path="/" element={<AdminLogin />} />
         <Route path="/organizer-dashboard" element={<OrganizerDashboard />} />
+        <Route path="/event/:id" element={<EventPanel />} />
       </Routes>
     </Router>
   );

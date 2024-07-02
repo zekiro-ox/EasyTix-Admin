@@ -1,10 +1,9 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import { FaUserCircle } from "react-icons/fa";
-import Logo from "./assets/CompanyLogo.png"; // Adjust the path as necessary
-import Carousel from "react-multi-carousel"; // Carousel library
-import "react-multi-carousel/lib/styles.css"; // Carousel CSS
-import EventPanel from "./EventPanel"; // Import EventPanel component
+import { Link, useNavigate } from "react-router-dom";
+import { FaUserCircle, FaSignOutAlt } from "react-icons/fa";
+import Logo from "./assets/CompanyLogo.png";
+import Carousel from "react-multi-carousel";
+import "react-multi-carousel/lib/styles.css";
 
 const events = [
   { id: 1, name: "Event 1", description: "Description for Event 1" },
@@ -16,47 +15,31 @@ const events = [
   { id: 7, name: "Event 7", description: "Description for Event 7" },
   { id: 8, name: "Event 8", description: "Description for Event 8" },
   { id: 9, name: "Event 9", description: "Description for Event 9" },
-  // Add more events here
 ];
 
 const responsive = {
-  superLargeDesktop: {
-    breakpoint: { max: 4000, min: 1024 },
-    items: 3,
-  },
-  desktop: {
-    breakpoint: { max: 1024, min: 768 },
-    items: 2,
-  },
-  tablet: {
-    breakpoint: { max: 768, min: 464 },
-    items: 1,
-  },
-  mobile: {
-    breakpoint: { max: 464, min: 0 },
-    items: 1,
-  },
+  superLargeDesktop: { breakpoint: { max: 4000, min: 1024 }, items: 3 },
+  desktop: { breakpoint: { max: 1024, min: 768 }, items: 2 },
+  tablet: { breakpoint: { max: 768, min: 464 }, items: 1 },
+  mobile: { breakpoint: { max: 464, min: 0 }, items: 1 },
 };
 
 const OrganizerDashboard = () => {
   const [selectedEvent, setSelectedEvent] = useState(null);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const navigate = useNavigate();
 
   const handleEventClick = (event) => {
     setSelectedEvent(event);
+    navigate(`/event/${event.id}`);
   };
 
-  const handleBack = () => {
-    setSelectedEvent(null); // Clear selected event to go back to event list
+  const handleLogout = () => {
+    // Perform logout actions here (e.g., clear local storage, etc.)
+    // For now, let's simulate a logout by clearing localStorage
+    localStorage.clear();
+    navigate("/organizer-login"); // Redirect to organizer login page
   };
-
-  // Dummy data for sales and feedbacks
-  const totalCustomers = 150;
-  const averageCustomersPerEvent = 50;
-  const feedbacks = [
-    { id: 1, text: "Great event, enjoyed it!" },
-    { id: 2, text: "Could improve on logistics." },
-    { id: 3, text: "Amazing experience, would attend again!" },
-  ];
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-900 text-white">
@@ -65,11 +48,28 @@ const OrganizerDashboard = () => {
           <img src={Logo} alt="Company Logo" className="h-12" />
         </Link>
         <h1 className="text-2xl font-bold">Dashboard</h1>
-        <FaUserCircle className="h-12 w-12 text-white" />
+        <div className="relative">
+          <FaUserCircle
+            className="h-8 w-12 text-white cursor-pointer"
+            onClick={() => setShowDropdown(!showDropdown)}
+          />
+          {showDropdown && (
+            <div className="absolute right-0 mt-2 w-48 bg-gray-800 rounded-lg shadow-lg py-1">
+              <button
+                className="block w-full text-left px-4 py-2 text-white hover:bg-gray-700"
+                onClick={handleLogout}
+              >
+                <FaSignOutAlt className="flex-shrink-0 w-5 h-5 transition duration-75" />
+              </button>
+            </div>
+          )}
+        </div>
       </header>
       <main className="flex flex-col items-center p-8">
         {selectedEvent ? (
-          <EventPanel event={selectedEvent} onBack={handleBack} />
+          <h2 className="text-4xl font-bold mb-6">
+            {selectedEvent.name} Details
+          </h2>
         ) : (
           <>
             <h2 className="text-4xl font-bold mb-6">Events</h2>
@@ -92,21 +92,21 @@ const OrganizerDashboard = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
                   <h3 className="text-2xl font-bold mb-2">Total Customers</h3>
-                  <p className="text-lg">{totalCustomers}</p>
+                  <p className="text-lg">150</p>
                 </div>
                 <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
                   <h3 className="text-2xl font-bold mb-2">
                     Average Customers Per Event
                   </h3>
-                  <p className="text-lg">{averageCustomersPerEvent}</p>
+                  <p className="text-lg">50</p>
                 </div>
                 <div className="bg-gray-800 p-6 rounded-lg shadow-lg col-span-2">
                   <h3 className="text-2xl font-bold mb-2">Feedbacks</h3>
-                  {feedbacks.map((feedback) => (
-                    <p key={feedback.id} className="text-lg">
-                      {feedback.text}
-                    </p>
-                  ))}
+                  <p className="text-lg">Great event, enjoyed it!</p>
+                  <p className="text-lg">Could improve on logistics.</p>
+                  <p className="text-lg">
+                    Amazing experience, would attend again!
+                  </p>
                 </div>
               </div>
             </div>
