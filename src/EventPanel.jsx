@@ -1,9 +1,8 @@
 import React, { useState } from "react";
-import { FaArrowLeft, FaSearch } from "react-icons/fa";
-import { QrReader } from "react-qr-reader";
+import { FaArrowLeft } from "react-icons/fa";
 
 const EventPanel = ({ event, onBack }) => {
-  const [registeredUsers, setRegisteredUsers] = useState([
+  const [registeredUsers] = useState([
     {
       id: 1,
       name: "John Doe",
@@ -32,27 +31,9 @@ const EventPanel = ({ event, onBack }) => {
   ]);
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [qrScanResult, setQrScanResult] = useState(null);
-  const [isQrScannerOpen, setIsQrScannerOpen] = useState(false); // State for controlling QR scanner visibility
 
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
-  };
-
-  const handleScan = (data) => {
-    if (data) {
-      setQrScanResult(data);
-      console.log("Scanned QR code:", data);
-    }
-  };
-
-  const handleError = (err) => {
-    console.error(err);
-  };
-
-  const toggleQrScanner = () => {
-    setIsQrScannerOpen(!isQrScannerOpen);
-    setQrScanResult(null); // Clear previous scan result when closing
   };
 
   const filteredUsers = registeredUsers.filter((user) =>
@@ -87,31 +68,8 @@ const EventPanel = ({ event, onBack }) => {
               value={searchTerm}
               onChange={handleSearchChange}
             />
-            <button
-              onClick={toggleQrScanner}
-              className="ml-2 px-3 md:px-4 py-2 rounded-lg bg-blue-500 text-white focus:outline-none hover:bg-blue-600"
-            >
-              Scan
-            </button>
           </div>
         </div>
-
-        {/* Conditional rendering based on isQrScannerOpen state */}
-        {isQrScannerOpen && (
-          <div className="w-full max-w-lg mb-4 md:mb-6">
-            <QrReader
-              delay={300}
-              onError={handleError}
-              onScan={handleScan}
-              style={{ width: "100%" }}
-            />
-            <p className="text-xs md:text-sm mt-2">
-              {qrScanResult
-                ? `Scanned QR Code: ${qrScanResult}`
-                : "Scanning QR code..."}
-            </p>
-          </div>
-        )}
 
         <div className="w-full max-w-screen-lg overflow-x-auto">
           <table className="w-full bg-gray-800 rounded-lg overflow-hidden">
