@@ -116,10 +116,10 @@ const EventPanel = ({ event }) => {
             />
           </div>
           <button
-            className="ml-2 px-2 py-2 bg-blue-600 hover:bg-blue-700 rounded-2xl text-white focus:outline-none"
+            className="ml-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-white focus:outline-none"
             onClick={startQrScanner}
           >
-            Scan Ticket
+            Scan
           </button>
         </div>
 
