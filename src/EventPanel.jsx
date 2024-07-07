@@ -37,6 +37,7 @@ const EventPanel = ({ event }) => {
 
   const [searchTerm, setSearchTerm] = useState("");
   const [isQrScannerOpen, setIsQrScannerOpen] = useState(false);
+  const [scannedUser, setScannedUser] = useState(null);
 
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
@@ -59,7 +60,13 @@ const EventPanel = ({ event }) => {
 
       qrCodeScanner.render(
         (qrCodeMessage) => {
-          alert(`QR Code scanned: ${qrCodeMessage}`);
+          const userId = parseInt(qrCodeMessage); // Assuming QR code contains user ID
+          const user = registeredUsers.find((user) => user.id === userId);
+          if (user) {
+            setScannedUser(user);
+          } else {
+            alert("User not found!");
+          }
           qrCodeScanner.clear();
           setIsQrScannerOpen(false);
         },
@@ -74,7 +81,7 @@ const EventPanel = ({ event }) => {
         qrCodeScanner.clear();
       };
     }
-  }, [isQrScannerOpen]);
+  }, [isQrScannerOpen, registeredUsers]);
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-900 text-white">
@@ -149,6 +156,18 @@ const EventPanel = ({ event }) => {
             </tbody>
           </table>
         </div>
+
+        {scannedUser && (
+          <div className="mt-6 bg-gray-800 p-4 rounded-lg text-center">
+            <h3 className="text-xl font-bold mb-2">Scanned User Details</h3>
+            <p>ID: {scannedUser.id}</p>
+            <p>Name: {scannedUser.name}</p>
+            <p>Email: {scannedUser.email}</p>
+            <p>Ticket Type: {scannedUser.ticketType}</p>
+            <p>Quantity: {scannedUser.quantity}</p>
+            <p>Status: {scannedUser.status}</p>
+          </div>
+        )}
       </main>
       <Modal isOpen={isQrScannerOpen} onClose={() => setIsQrScannerOpen(false)}>
         <div id="qr-reader" style={{ width: "100%" }}></div>
