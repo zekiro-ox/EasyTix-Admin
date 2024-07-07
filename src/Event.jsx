@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
 import {
   FaSearch,
   FaPlus,
@@ -11,6 +10,7 @@ import Sidebar from "./Sidebar";
 import Switch from "react-switch";
 import AddEventForm from "./AddEventForm";
 import EventDetailsModal from "./EventDetailsModal";
+import ConfirmationModal from "./ConfirmationModal";
 
 const EventComponent = () => {
   const [events, setEvents] = useState([
@@ -39,6 +39,8 @@ const EventComponent = () => {
   const [showDetails, setShowDetails] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [newEventData, setNewEventData] = useState(null); // State to hold newly added event data
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [eventToArchive, setEventToArchive] = useState(null);
 
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
@@ -109,6 +111,26 @@ const EventComponent = () => {
     setSelectedEvent(null);
   };
 
+  const handleArchive = (eventId) => {
+    const event = events.find((event) => event.id === eventId);
+    setEventToArchive(event);
+    setShowConfirmation(true);
+  };
+
+  const confirmArchive = () => {
+    const updatedEvents = events.filter(
+      (event) => event.id !== eventToArchive.id
+    );
+    setEvents(updatedEvents);
+    setShowConfirmation(false);
+    setEventToArchive(null);
+  };
+
+  const cancelArchive = () => {
+    setShowConfirmation(false);
+    setEventToArchive(null);
+  };
+
   const filteredEvents = events.filter((event) =>
     event.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -159,6 +181,14 @@ const EventComponent = () => {
               event={selectedEvent}
               newEventData={newEventData} // Pass new event data to modal
               onClose={closeDetails}
+            />
+          )}
+
+          {showConfirmation && (
+            <ConfirmationModal
+              message="Do you want to archive this event?"
+              onAccept={confirmArchive}
+              onCancel={cancelArchive}
             />
           )}
 

@@ -1,0 +1,26 @@
+.dropdown-menu {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 10px);
+    width: 200px;
+    background-color: #333;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
+    transform: translateY(-10px);
+  }
+  
+  .dropdown-menu.fade-in {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+  
+  .dropdown-menu.fade-out {
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+  }
+  

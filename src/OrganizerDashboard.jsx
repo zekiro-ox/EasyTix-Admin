@@ -4,6 +4,7 @@ import { FaUserCircle, FaSignOutAlt } from "react-icons/fa";
 import Logo from "./assets/CompanyLogo.png";
 import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
+import "./OrganizerDashboard.css"; // Import CSS for animations
 
 const events = [
   { id: 1, name: "Event 1", description: "Description for Event 1" },
@@ -27,6 +28,7 @@ const responsive = {
 const OrganizerDashboard = () => {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false); // State for logout loading animation
   const navigate = useNavigate();
 
   const handleEventClick = (event) => {
@@ -35,10 +37,15 @@ const OrganizerDashboard = () => {
   };
 
   const handleLogout = () => {
-    // Perform logout actions here (e.g., clear local storage, etc.)
-    // For now, let's simulate a logout by clearing localStorage
-    localStorage.clear();
-    navigate("/organizer-login"); // Redirect to organizer login page
+    setIsLoggingOut(true); // Start logout animation
+
+    // Simulate logout process with a timeout
+    setTimeout(() => {
+      // Perform logout actions (e.g., clear session, redirect)
+      localStorage.clear(); // Example: Clear local storage
+      navigate("/organizer-login"); // Redirect to login page after logout
+      setIsLoggingOut(false); // Stop logout animation after a short delay
+    }, 2000); // Simulate a delay for demo purposes
   };
 
   return (
@@ -54,12 +61,17 @@ const OrganizerDashboard = () => {
             onClick={() => setShowDropdown(!showDropdown)}
           />
           {showDropdown && (
-            <div className="absolute right-0 mt-2 w-48 bg-gray-800 rounded-lg shadow-lg py-1">
+            <div
+              className={`dropdown-menu ${
+                showDropdown ? "fade-in" : "fade-out"
+              }`}
+            >
               <button
-                className="block w-full text-left px-4 py-2 text-white hover:bg-gray-700"
+                className="block w-full text-left px-4 py-2 text-white hover:bg-gray-700 rounded-lg flex items-center"
                 onClick={handleLogout}
               >
-                <FaSignOutAlt className="flex-shrink-0 w-5 h-5 transition duration-75" />
+                <FaSignOutAlt className="flex-shrink-0 w-5 h-5 transition duration-75 mr-2" />
+                {isLoggingOut ? "Logging Out..." : "Logout"}
               </button>
             </div>
           )}
