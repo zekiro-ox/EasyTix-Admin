@@ -1,6 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaArrowLeft } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import { Html5QrcodeScanner } from "html5-qrcode";
+import Modal from "./Modal"; // Import the Modal component
 
 const EventPanel = ({ event }) => {
   const navigate = useNavigate();
@@ -34,6 +36,7 @@ const EventPanel = ({ event }) => {
   ]);
 
   const [searchTerm, setSearchTerm] = useState("");
+  const [isQrScannerOpen, setIsQrScannerOpen] = useState(false);
 
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
@@ -42,6 +45,36 @@ const EventPanel = ({ event }) => {
   const filteredUsers = registeredUsers.filter((user) =>
     user.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const startQrScanner = () => {
+    setIsQrScannerOpen(true);
+  };
+
+  useEffect(() => {
+    if (isQrScannerOpen) {
+      const qrCodeScanner = new Html5QrcodeScanner("qr-reader", {
+        fps: 10,
+        qrbox: 250,
+      });
+
+      qrCodeScanner.render(
+        (qrCodeMessage) => {
+          alert(`QR Code scanned: ${qrCodeMessage}`);
+          qrCodeScanner.clear();
+          setIsQrScannerOpen(false);
+        },
+        (errorMessage) => {
+          console.log(
+            `QR Code no longer in front of camera. Error: ${errorMessage}`
+          );
+        }
+      );
+
+      return () => {
+        qrCodeScanner.clear();
+      };
+    }
+  }, [isQrScannerOpen]);
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-900 text-white">
@@ -72,8 +105,8 @@ const EventPanel = ({ event }) => {
           </>
         )}
 
-        <div className="w-full max-w-lg mb-4 md:mb-6">
-          <div className="relative flex items-center">
+        <div className="w-full max-w-lg mb-4 md:mb-6 flex items-center">
+          <div className="relative flex items-center w-full">
             <input
               type="text"
               className="w-full px-3 md:px-4 py-2 rounded-lg bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-blue-600"
@@ -82,6 +115,12 @@ const EventPanel = ({ event }) => {
               onChange={handleSearchChange}
             />
           </div>
+          <button
+            className="ml-2 px-2 py-2 bg-blue-600 hover:bg-blue-700 rounded-2xl text-white focus:outline-none"
+            onClick={startQrScanner}
+          >
+            Scan Ticket
+          </button>
         </div>
 
         <div className="w-full overflow-x-auto">
@@ -111,6 +150,9 @@ const EventPanel = ({ event }) => {
           </table>
         </div>
       </main>
+      <Modal isOpen={isQrScannerOpen} onClose={() => setIsQrScannerOpen(false)}>
+        <div id="qr-reader" style={{ width: "100%" }}></div>
+      </Modal>
     </div>
   );
 };
