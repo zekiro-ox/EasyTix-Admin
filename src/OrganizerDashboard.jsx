@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { FaUserCircle, FaSignOutAlt } from "react-icons/fa";
+import { FaUserCircle, FaSignOutAlt, FaCalendarAlt } from "react-icons/fa";
 import Logo from "./assets/CompanyLogo.png";
 import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
@@ -52,7 +52,7 @@ const OrganizerDashboard = () => {
     <div className="min-h-screen flex flex-col bg-gray-900 text-white">
       <header className="flex items-center justify-between p-4 bg-gray-800">
         <Link to="/" className="flex items-center">
-          <img src={Logo} alt="Company Logo" className="h-12" />
+          <img src={Logo} alt="Company Logo" className="h-8" />
         </Link>
         <h1 className="text-2xl font-bold">Dashboard</h1>
         <div className="relative">
@@ -67,7 +67,7 @@ const OrganizerDashboard = () => {
               }`}
             >
               <button
-                className="block w-full text-left px-4 py-2 text-white hover:bg-gray-700 rounded-lg flex items-center"
+                className="block w-full bg-gray-800 text-left px-4 py-2 text-white hover:bg-purple-900 rounded-lg flex items-center"
                 onClick={handleLogout}
               >
                 <FaSignOutAlt className="flex-shrink-0 w-5 h-5 transition duration-75 mr-2" />
@@ -90,10 +90,13 @@ const OrganizerDashboard = () => {
                 {events.map((event) => (
                   <div
                     key={event.id}
-                    className="cursor-pointer bg-gray-800 p-4 m-2 rounded-lg shadow-lg"
+                    className="cursor-pointer bg-purple-900 p-4 m-2 rounded-lg shadow-lg drop-shadow-lg"
                     onClick={() => handleEventClick(event)}
                   >
-                    <h3 className="text-2xl font-bold">{event.name}</h3>
+                    <div className="flex items-center mb-2">
+                      <FaCalendarAlt className="text-white mr-2" />
+                      <h3 className="text-2xl font-bold">{event.name}</h3>
+                    </div>
                     <p className="text-lg">{event.description}</p>
                   </div>
                 ))}
@@ -102,17 +105,17 @@ const OrganizerDashboard = () => {
             <div className="mt-10">
               <h2 className="text-4xl font-bold mb-6">Sales and Feedback</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
+                <div className="bg-purple-900 p-6 rounded-lg shadow-lg">
                   <h3 className="text-2xl font-bold mb-2">Total Customers</h3>
                   <p className="text-lg">150</p>
                 </div>
-                <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
+                <div className="bg-purple-900 p-6 rounded-lg shadow-lg">
                   <h3 className="text-2xl font-bold mb-2">
                     Average Customers Per Event
                   </h3>
                   <p className="text-lg">50</p>
                 </div>
-                <div className="bg-gray-800 p-6 rounded-lg shadow-lg col-span-2">
+                <div className="bg-purple-900 p-6 rounded-lg shadow-lg col-span-2">
                   <h3 className="text-2xl font-bold mb-2">Feedbacks</h3>
                   <p className="text-lg">Great event, enjoyed it!</p>
                   <p className="text-lg">Could improve on logistics.</p>

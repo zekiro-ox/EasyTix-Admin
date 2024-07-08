@@ -92,7 +92,7 @@ const EventPanel = ({ event }) => {
     <div className="min-h-screen flex flex-col bg-gray-900 text-white">
       <header className="flex items-center justify-between p-4 bg-gray-800">
         <button
-          className="flex items-center text-white text-sm font-semibold mr-4 md:mr-8 hover:font-bold"
+          className="flex items-center text-white text-lg font-semibold mr-4 md:mr-8 hover:font-bold"
           onClick={() => navigate(-1)}
         >
           <FaArrowLeft className="mr-2" />
