@@ -87,7 +87,11 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
         console.log("Document updated with ID: ", event.id);
       } else {
         const eventsRef = collection(db, "events");
-        const docRef = await addDoc(eventsRef, newEvent);
+        const docRef = await addDoc(eventsRef, {
+          ...newEvent,
+          eventPosterURL: newEvent.eventPosterURL, // Ensure these fields are properly set
+          seatMapURL: newEvent.seatMapURL,
+        });
         console.log("Document written with ID: ", docRef.id);
       }
       onAddEvent();

@@ -89,7 +89,7 @@ const EventDetailsModal = ({ event, onClose }) => {
                               <strong>Type:</strong> {ticket.type}
                             </p>
                             <p className="text-sm text-gray-100">
-                              <strong>Price:</strong> ${ticket.price}
+                              <strong>Price:</strong> ${Number(ticket.price)}
                             </p>
                             <p className="text-sm text-gray-100">
                               <strong>Quantity:</strong> {ticket.quantity}
@@ -129,7 +129,7 @@ EventDetailsModal.propTypes = {
     tickets: PropTypes.arrayOf(
       PropTypes.shape({
         type: PropTypes.string,
-        price: PropTypes.number,
+        price: PropTypes.number, // Ensure price is expected as number
         quantity: PropTypes.number,
       })
     ),
