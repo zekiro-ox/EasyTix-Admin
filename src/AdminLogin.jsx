@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "./config/firebaseConfig"; // Adjust the path as per your project structure
+import { auth, db } from "./config/firebaseConfig"; // Adjust the path as per your project structure
+import { collection, query, where, getDocs } from "firebase/firestore";
 import Logo from "./assets/CompanyLogo.png"; // Adjust the path as per your project structure
 
 const AdminLogin = () => {
@@ -30,13 +30,20 @@ const AdminLogin = () => {
     setRememberMe(e.target.checked);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setError(""); // Clear any previous errors
 
-    signInWithEmailAndPassword(auth, email, password)
-      .then((userCredential) => {
+    try {
+      const q = query(
+        collection(db, "admins"),
+        where("email", "==", email),
+        where("password", "==", password)
+      );
+      const querySnapshot = await getDocs(q);
+
+      if (!querySnapshot.empty) {
         setIsLoggedIn(true);
         if (rememberMe) {
           localStorage.setItem("rememberedEmail", email);
@@ -44,14 +51,15 @@ const AdminLogin = () => {
           localStorage.removeItem("rememberedEmail");
         }
         navigate("/dashboard");
-      })
-      .catch((error) => {
+      } else {
         setError("Invalid email or password.");
-        console.error("Error logging in:", error);
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
+      }
+    } catch (error) {
+      setError("Error logging in.");
+      console.error("Error logging in:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

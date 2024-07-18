@@ -74,6 +74,31 @@ const EventDetailsModal = ({ event, onClose }) => {
                     </label>
                     <p className="mt-1 text-sm text-gray-100">{event.venue}</p>
                   </div>
+                  {event.tickets && event.tickets.length > 0 && (
+                    <div className="col-span-2">
+                      <label className="block text-sm font-medium text-gray-400">
+                        Tickets:
+                      </label>
+                      <div className="mt-1">
+                        {event.tickets.map((ticket, index) => (
+                          <div
+                            key={index}
+                            className="border border-gray-600 rounded-md p-2 mb-2"
+                          >
+                            <p className="text-sm text-gray-100">
+                              <strong>Type:</strong> {ticket.type}
+                            </p>
+                            <p className="text-sm text-gray-100">
+                              <strong>Price:</strong> ${ticket.price}
+                            </p>
+                            <p className="text-sm text-gray-100">
+                              <strong>Quantity:</strong> {ticket.quantity}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -93,7 +118,22 @@ const EventDetailsModal = ({ event, onClose }) => {
 };
 
 EventDetailsModal.propTypes = {
-  event: PropTypes.object.isRequired,
+  event: PropTypes.shape({
+    name: PropTypes.string,
+    description: PropTypes.string,
+    startDate: PropTypes.string,
+    endDate: PropTypes.string,
+    startTime: PropTypes.string,
+    endTime: PropTypes.string,
+    venue: PropTypes.string,
+    tickets: PropTypes.arrayOf(
+      PropTypes.shape({
+        type: PropTypes.string,
+        price: PropTypes.number,
+        quantity: PropTypes.number,
+      })
+    ),
+  }).isRequired,
   onClose: PropTypes.func.isRequired,
 };
 

@@ -1,38 +1,28 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   FaSearch,
   FaPlus,
   FaEdit,
   FaArchive,
   FaInfoCircle,
+  FaSyncAlt,
 } from "react-icons/fa";
 import Sidebar from "./Sidebar";
-import Switch from "react-switch";
 import AddEventForm from "./AddEventForm";
 import EventDetailsModal from "./EventDetailsModal";
 import ConfirmationModal from "./ConfirmationModal";
+import {
+  collection,
+  getDocs,
+  updateDoc,
+  deleteDoc,
+  doc,
+  addDoc,
+} from "firebase/firestore";
+import { db } from "./config/firebaseConfig"; // Adjust the path based on your Firebase setup
 
 const EventComponent = () => {
-  const [events, setEvents] = useState([
-    {
-      id: 1,
-      name: "Event 1",
-      description:
-        "Description of Event 1. This is a longer description to demonstrate the truncation.",
-      status: "Active",
-      venue: "Venue A",
-    },
-    {
-      id: 2,
-      name: "Event 2",
-      description:
-        "Description of Event 2. Another description for testing purposes.",
-      status: "Inactive",
-      venue: "Venue B",
-    },
-    // Add more events as needed
-  ]);
-
+  const [events, setEvents] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [showAddForm, setShowAddForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
@@ -42,27 +32,54 @@ const EventComponent = () => {
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [eventToArchive, setEventToArchive] = useState(null);
 
+  useEffect(() => {
+    // Fetch events from Firestore on component mount
+    const fetchEvents = async () => {
+      try {
+        const eventsCollection = collection(db, "events");
+        const snapshot = await getDocs(eventsCollection);
+        const eventsData = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setEvents(eventsData);
+      } catch (error) {
+        console.error("Error fetching events: ", error);
+      }
+    };
+    fetchEvents();
+  }, []);
+
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
   };
 
-  const handleAddEvent = (newEvent) => {
-    const maxId =
-      events.length > 0 ? Math.max(...events.map((event) => event.id)) : 0;
-    newEvent.id = maxId + 1; // Automatically generate ID
-    newEvent.status = "Active"; // Set status to Active
-    setEvents([...events, newEvent]);
-    setNewEventData(newEvent); // Store the newly added event data
-    setShowAddForm(false); // Hide the form after adding event
+  const handleAddEvent = async (newEvent) => {
+    try {
+      const eventsRef = collection(db, "events");
+      const docRef = await addDoc(eventsRef, newEvent);
+      const addedEvent = { id: docRef.id, ...newEvent };
+      setEvents([...events, addedEvent]);
+      setNewEventData(addedEvent); // Store the newly added event data
+      setShowAddForm(false); // Hide the form after adding event
+    } catch (error) {
+      console.error("Error adding event: ", error);
+    }
   };
 
-  const handleEditEvent = (editedEvent) => {
-    const updatedEvents = events.map((event) =>
-      event.id === editedEvent.id ? { ...editedEvent } : event
-    );
-    setEvents(updatedEvents);
-    setSelectedEvent(null); // Clear selected event
-    setShowEditForm(false); // Hide edit form after editing
+  const handleEditEvent = async (editedEvent) => {
+    try {
+      const eventDocRef = doc(db, "events", editedEvent.id);
+      await updateDoc(eventDocRef, editedEvent);
+      const updatedEvents = events.map((event) =>
+        event.id === editedEvent.id ? { ...editedEvent } : event
+      );
+      setEvents(updatedEvents);
+      setSelectedEvent(null); // Clear selected event
+      setShowEditForm(false); // Hide edit form after editing
+    } catch (error) {
+      console.error("Error updating event: ", error);
+    }
   };
 
   const handleCancel = () => {
@@ -71,16 +88,8 @@ const EventComponent = () => {
     setSelectedEvent(null); // Clear selected event
   };
 
-  const toggleStatus = (eventId) => {
-    const updatedEvents = events.map((event) =>
-      event.id === eventId
-        ? {
-            ...event,
-            status: event.status === "Active" ? "Inactive" : "Active",
-          }
-        : event
-    );
-    setEvents(updatedEvents);
+  const handleReloadPage = () => {
+    window.location.reload(); // Reload the page
   };
 
   const getFirstSentence = (text) => {
@@ -117,13 +126,19 @@ const EventComponent = () => {
     setShowConfirmation(true);
   };
 
-  const confirmArchive = () => {
-    const updatedEvents = events.filter(
-      (event) => event.id !== eventToArchive.id
-    );
-    setEvents(updatedEvents);
-    setShowConfirmation(false);
-    setEventToArchive(null);
+  const confirmArchive = async () => {
+    try {
+      const eventDocRef = doc(db, "events", eventToArchive.id);
+      await deleteDoc(eventDocRef);
+      const updatedEvents = events.filter(
+        (event) => event.id !== eventToArchive.id
+      );
+      setEvents(updatedEvents);
+      setShowConfirmation(false);
+      setEventToArchive(null);
+    } catch (error) {
+      console.error("Error archiving event: ", error);
+    }
   };
 
   const cancelArchive = () => {
@@ -143,9 +158,15 @@ const EventComponent = () => {
           <div className="mb-4 flex flex-col lg:flex-row items-start lg:items-center justify-between">
             <div className="relative flex-1 w-full lg:w-auto mb-4 lg:mb-0 lg:mr-4">
               <div className="relative">
+                <button
+                  onClick={handleReloadPage}
+                  className="absolute left-0 inset-y-0 px-3 flex items-center text-gray-400 hover:text-gray-300"
+                >
+                  <FaSyncAlt />
+                </button>
                 <input
                   type="text"
-                  className="w-full px-4 py-2 rounded-lg border border-gray-600 shadow-sm focus:outline-none focus:ring focus:ring-indigo-200 bg-gray-600 text-white"
+                  className="w-full pl-10 px-4 py-2 rounded-lg border border-gray-600 shadow-sm focus:outline-none focus:ring focus:ring-indigo-200 bg-gray-600 text-white"
                   placeholder="Search events..."
                   value={searchTerm}
                   onChange={handleSearch}
@@ -209,9 +230,6 @@ const EventComponent = () => {
                     Venue
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium tracking-wider">
                     Action
                   </th>
                 </tr>
@@ -225,42 +243,36 @@ const EventComponent = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
                       {event.name}
                     </td>
-                    <td className="px-6 py-4 whitespace-wrap text-sm text-gray-300">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
                       {getFirstSentence(event.description)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
                       {event.venue}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                      <Switch
-                        onChange={() => toggleStatus(event.id)}
-                        checked={event.status === "Active"}
-                        className="react-switch"
-                        id={`status-switch-${event.id}`}
-                      />
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                      <button
-                        className="flex items-center text-indigo-400 hover:text-indigo-600 mr-2"
-                        onClick={() => handleArchive(event.id)}
-                      >
-                        <FaArchive className="mr-1" />
-                        Archive
-                      </button>
-                      <button
-                        onClick={() => openEditForm(event.id)} // Open edit form
-                        className="flex items-center text-indigo-400 hover:text-indigo-600 mr-2"
-                      >
-                        <FaEdit className="mr-1" />
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => openDetails(event.id)} // Open details modal
-                        className="flex items-center text-indigo-400 hover:text-indigo-600"
-                      >
-                        <FaInfoCircle className="mr-1" />
-                        View Details
-                      </button>
+                      <div className="flex">
+                        <button
+                          onClick={() => openDetails(event.id)}
+                          className="mr-2 hover:text-purple-400"
+                          title="Details"
+                        >
+                          <FaInfoCircle />
+                        </button>
+                        <button
+                          onClick={() => openEditForm(event.id)}
+                          className="mr-2 hover:text-purple-400"
+                          title="Edit"
+                        >
+                          <FaEdit />
+                        </button>
+                        <button
+                          onClick={() => handleArchive(event.id)}
+                          className="hover:text-purple-400"
+                          title="Archive"
+                        >
+                          <FaArchive />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
