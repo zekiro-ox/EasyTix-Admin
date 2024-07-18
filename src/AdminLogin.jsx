@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "./config/firebaseConfig"; // Adjust the path as per your project structure
 import Logo from "./assets/CompanyLogo.png"; // Adjust the path as per your project structure
 
 const AdminLogin = () => {
@@ -7,10 +9,10 @@ const AdminLogin = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false); // State for loading animation
-  const [error, setError] = useState(""); // State for login error message
-  const [rememberMe, setRememberMe] = useState(false); // State for Remember Me checkbox
-  const navigate = useNavigate(); // Initialize useNavigate hook
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const storedEmail = localStorage.getItem("rememberedEmail");
@@ -30,32 +32,31 @@ const AdminLogin = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    setIsLoading(true); // Start loading animation
+    setIsLoading(true);
+    setError(""); // Clear any previous errors
 
-    // Replace with actual authentication logic (e.g., API call, authentication service)
-    const mockEmail = "admin@example.com";
-    const mockPassword = "password";
-
-    setTimeout(() => {
-      if (email === mockEmail && password === mockPassword) {
+    signInWithEmailAndPassword(auth, email, password)
+      .then((userCredential) => {
         setIsLoggedIn(true);
         if (rememberMe) {
-          localStorage.setItem("rememberedEmail", email); // Remember email if checked
+          localStorage.setItem("rememberedEmail", email);
         } else {
-          localStorage.removeItem("rememberedEmail"); // Clear remembered email if unchecked
+          localStorage.removeItem("rememberedEmail");
         }
-        navigate("/dashboard"); // Navigate to dashboard on successful login
-      } else {
-        setError("Invalid email or password."); // Set error message for wrong credentials
-      }
-      setIsLoading(false); // Stop loading animation after a short delay
-    }, 3000); // Simulate a delay for demo purposes
+        navigate("/dashboard");
+      })
+      .catch((error) => {
+        setError("Invalid email or password.");
+        console.error("Error logging in:", error);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
   };
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-900">
       <div className="bg-gray-800 p-8 rounded-lg shadow-lg w-full max-w-md">
-        {/* Logo section */}
         <div className="flex items-center justify-center mb-8">
           <img src={Logo} alt="Company Logo" className="h-20 w-auto" />
         </div>
@@ -158,7 +159,7 @@ const AdminLogin = () => {
           <button
             type="submit"
             className="w-full py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
-            disabled={isLoading} // Disable button while loading
+            disabled={isLoading}
           >
             {isLoading ? (
               <div className="flex items-center justify-center">
