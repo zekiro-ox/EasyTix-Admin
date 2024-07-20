@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Logo from "./assets/CompanyLogo.png"; // Adjust the path as per your project structure
+import { db } from "./config/firebaseConfig"; // Adjust the path as per your project structure
+import { collection, getDocs } from "firebase/firestore"; // Import Firestore methods
 
 const OrganizerLogin = () => {
   const [passwordVisible, setPasswordVisible] = useState(false);
@@ -10,6 +12,7 @@ const OrganizerLogin = () => {
   const [isLoading, setIsLoading] = useState(false); // State for loading animation
   const [showIncorrectPassword, setShowIncorrectPassword] = useState(false); // State for showing incorrect password message
   const [rememberMe, setRememberMe] = useState(false); // State for remember me checkbox
+  const [accounts, setAccounts] = useState([]); // State for storing accounts data
   const navigate = useNavigate(); // Initialize useNavigate hook
 
   useEffect(() => {
@@ -20,6 +23,20 @@ const OrganizerLogin = () => {
       setPassword(storedPassword);
       setRememberMe(true);
     }
+
+    // Fetch account data from Firestore
+    const fetchAccounts = async () => {
+      try {
+        const accountsCollection = collection(db, "Accounts"); // Get the collection reference
+        const accountsSnapshot = await getDocs(accountsCollection); // Fetch the documents
+        const accountsList = accountsSnapshot.docs.map((doc) => doc.data()); // Map the documents to data
+        setAccounts(accountsList); // Set the accounts state
+      } catch (error) {
+        console.error("Error fetching accounts:", error);
+      }
+    };
+
+    fetchAccounts();
   }, []);
 
   const togglePasswordVisibility = () => {
@@ -30,12 +47,13 @@ const OrganizerLogin = () => {
     e.preventDefault();
     setIsLoading(true); // Start loading animation
 
-    // Replace with actual authentication logic (e.g., API call, authentication service)
-    const mockEmail = "organizer@example.com";
-    const mockPassword = "password";
+    // Authenticate user
+    const authenticated = accounts.some(
+      (account) => account.email === email && account.password === password
+    );
 
     setTimeout(() => {
-      if (email === mockEmail && password === mockPassword) {
+      if (authenticated) {
         setIsLoggedIn(true);
         navigate("/organizer-dashboard"); // Navigate to organizer dashboard on successful login
 

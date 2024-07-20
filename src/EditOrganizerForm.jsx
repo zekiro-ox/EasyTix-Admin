@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from "react";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 const EditOrganizerForm = ({ organizer, onSaveOrganizer, onCancel }) => {
   const [firstName, setFirstName] = useState(organizer.firstName || "");
   const [lastName, setLastName] = useState(organizer.lastName || "");
   const [email, setEmail] = useState(organizer.email || "");
   const [password, setPassword] = useState(organizer.password || "");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     if (organizer) {
@@ -17,9 +20,13 @@ const EditOrganizerForm = ({ organizer, onSaveOrganizer, onCancel }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (password !== confirmPassword) {
+      alert("Passwords do not match.");
+      return;
+    }
     const updatedOrganizer = {
       ...organizer,
-      name: `${firstName} ${lastName}`, // Combine first and last names
+      name: `${firstName} ${lastName}`,
       email,
       password,
     };
@@ -61,15 +68,47 @@ const EditOrganizerForm = ({ organizer, onSaveOrganizer, onCancel }) => {
               required
             />
           </div>
-          <div className="mb-4">
+          <div className="mb-4 relative">
             <label className="block text-sm font-medium mb-1">Password</label>
             <input
-              type="password"
+              type={showPassword ? "text" : "password"}
               className="w-full px-4 py-2 rounded-lg border border-gray-700 shadow-sm focus:outline-none focus:ring focus:ring-indigo-200 bg-gray-700 text-gray-100"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
             />
+            <div
+              className="absolute inset-y-0 right-0 top-5 pr-3 flex items-center cursor-pointer"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? (
+                <FaEyeSlash className="text-gray-400" />
+              ) : (
+                <FaEye className="text-gray-400" />
+              )}
+            </div>
+          </div>
+          <div className="mb-4 relative">
+            <label className="block text-sm font-medium mb-1">
+              Confirm Password
+            </label>
+            <input
+              type={showPassword ? "text" : "password"}
+              className="w-full px-4 py-2 rounded-lg border border-gray-700 shadow-sm focus:outline-none focus:ring focus:ring-indigo-200 bg-gray-700 text-gray-100"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+            />
+            <div
+              className="absolute inset-y-0 right-0 top-5 pr-3 flex items-center cursor-pointer"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? (
+                <FaEyeSlash className="text-gray-400" />
+              ) : (
+                <FaEye className="text-gray-400" />
+              )}
+            </div>
           </div>
           <div className="flex justify-end">
             <button
