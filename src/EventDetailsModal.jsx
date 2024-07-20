@@ -99,6 +99,50 @@ const EventDetailsModal = ({ event, onClose }) => {
                       </div>
                     </div>
                   )}
+                  {event.eventPosterURL && (
+                    <div className="col-span-2">
+                      <label className="block text-sm font-medium text-gray-400">
+                        Event Poster:
+                      </label>
+                      <div className="mt-1">
+                        <a
+                          href={event.eventPosterURL}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="block text-sm text-indigo-500 hover:underline"
+                        >
+                          View Event Poster
+                        </a>
+                        <img
+                          src={event.eventPosterURL}
+                          alt="Event Poster"
+                          className="mt-2 rounded-md border border-gray-600"
+                        />
+                      </div>
+                    </div>
+                  )}
+                  {event.seatMapURL && (
+                    <div className="col-span-2">
+                      <label className="block text-sm font-medium text-gray-400">
+                        Seat Map:
+                      </label>
+                      <div className="mt-1">
+                        <a
+                          href={event.seatMapURL}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="block text-sm text-indigo-500 hover:underline"
+                        >
+                          View Seat Map
+                        </a>
+                        <img
+                          src={event.seatMapURL}
+                          alt="Seat Map"
+                          className="mt-2 rounded-md border border-gray-600"
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -126,6 +170,8 @@ EventDetailsModal.propTypes = {
     startTime: PropTypes.string,
     endTime: PropTypes.string,
     venue: PropTypes.string,
+    eventPosterURL: PropTypes.string,
+    seatMapURL: PropTypes.string,
     tickets: PropTypes.arrayOf(
       PropTypes.shape({
         type: PropTypes.string,

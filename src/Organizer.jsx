@@ -1,61 +1,82 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaSearch, FaPlus, FaEdit, FaTrash } from "react-icons/fa";
 import Sidebar from "./Sidebar";
 import AddOrganizerForm from "./AddOrganizerForm";
 import EditOrganizerForm from "./EditOrganizerForm";
+import {
+  collection,
+  addDoc,
+  getDocs,
+  updateDoc,
+  deleteDoc,
+  doc,
+} from "firebase/firestore";
+import { db } from "./config/firebaseConfig";
 
 const OrganizerComponent = () => {
-  const [organizers, setOrganizers] = useState([
-    {
-      id: 1,
-      firstName: "John",
-      lastName: "Doe",
-      name: "John Doe",
-      email: "john.doe@example.com",
-      password: "password1",
-    },
-    {
-      id: 2,
-      firstName: "Jane",
-      lastName: "Smith",
-      name: "Jane Smith",
-      email: "jane.smith@example.com",
-      password: "password2",
-    },
-    // Add more organizers as needed
-  ]);
-
+  const [organizers, setOrganizers] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [showAddForm, setShowAddForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
   const [currentOrganizer, setCurrentOrganizer] = useState(null);
 
+  useEffect(() => {
+    fetchOrganizers();
+  }, []);
+
+  const fetchOrganizers = async () => {
+    try {
+      const querySnapshot = await getDocs(collection(db, "Accounts"));
+      const organizerList = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      console.log("Fetched organizers:", organizerList);
+      setOrganizers(organizerList);
+    } catch (error) {
+      console.error("Error fetching organizers: ", error);
+    }
+  };
+
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
   };
 
-  const handleAddOrganizer = (newOrganizer) => {
-    const maxId =
-      organizers.length > 0 ? Math.max(...organizers.map((org) => org.id)) : 0;
-    newOrganizer.id = maxId + 1; // Automatically generate ID
-    newOrganizer.name = `${newOrganizer.firstName} ${newOrganizer.lastName}`;
-    setOrganizers([...organizers, newOrganizer]);
-    setShowAddForm(false); // Hide the form after adding organizer
+  const handleAddOrganizer = async (newOrganizer) => {
+    try {
+      const docRef = await addDoc(collection(db, "Accounts"), newOrganizer);
+      newOrganizer.id = docRef.id;
+      setOrganizers([...organizers, newOrganizer]);
+      setShowAddForm(false);
+    } catch (error) {
+      console.error("Error adding organizer: ", error);
+    }
   };
 
-  const handleSaveOrganizer = (updatedOrganizer) => {
-    const updatedOrganizers = organizers.map((organizer) =>
-      organizer.id === updatedOrganizer.id ? updatedOrganizer : organizer
-    );
-    setOrganizers(updatedOrganizers);
-    setShowEditForm(false); // Hide the form after saving changes
+  const handleSaveOrganizer = async (updatedOrganizer) => {
+    try {
+      const docRef = doc(db, "Accounts", updatedOrganizer.id);
+      await updateDoc(docRef, updatedOrganizer);
+      const updatedOrganizers = organizers.map((organizer) =>
+        organizer.id === updatedOrganizer.id ? updatedOrganizer : organizer
+      );
+      setOrganizers(updatedOrganizers);
+      setShowEditForm(false);
+    } catch (error) {
+      console.error("Error updating organizer: ", error);
+    }
   };
 
-  const handleDeleteOrganizer = (organizerId) => {
-    const updatedOrganizers = organizers.filter(
-      (organizer) => organizer.id !== organizerId
-    );
-    setOrganizers(updatedOrganizers);
+  const handleDeleteOrganizer = async (organizerId) => {
+    try {
+      await deleteDoc(doc(db, "Accounts", organizerId));
+      const updatedOrganizers = organizers.filter(
+        (organizer) => organizer.id !== organizerId
+      );
+      setOrganizers(updatedOrganizers);
+    } catch (error) {
+      console.error("Error deleting organizer: ", error);
+    }
   };
 
   const openEditForm = (organizerId) => {
@@ -64,8 +85,10 @@ const OrganizerComponent = () => {
     setShowEditForm(true);
   };
 
-  const filteredOrganizers = organizers.filter((organizer) =>
-    organizer.name.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredOrganizers = organizers.filter(
+    (organizer) =>
+      organizer.name &&
+      organizer.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -131,35 +154,48 @@ const OrganizerComponent = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-700">
-                {filteredOrganizers.map((organizer) => (
-                  <tr key={organizer.id}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                      {organizer.id}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                      {organizer.name}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                      {organizer.email}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                      <button
-                        className="flex items-center text-indigo-400 hover:text-indigo-600 mr-2"
-                        onClick={() => openEditForm(organizer.id)}
-                      >
-                        <FaEdit className="mr-1" />
-                        Edit
-                      </button>
-                      <button
-                        className="flex items-center text-red-400 hover:text-red-600"
-                        onClick={() => handleDeleteOrganizer(organizer.id)}
-                      >
-                        <FaTrash className="mr-1" />
-                        Delete
-                      </button>
+                {filteredOrganizers.length > 0 ? (
+                  filteredOrganizers.map((organizer) => (
+                    <tr key={organizer.id}>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                        {organizer.id}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                        {organizer.name || "N/A"} {/* Handle missing name */}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                        {organizer.email || "N/A"} {/* Handle missing email */}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                        <div className="flex">
+                          <button
+                            className="mr-2 hover:text-purple-400"
+                            onClick={() => openEditForm(organizer.id)}
+                            title="Edit"
+                          >
+                            <FaEdit />
+                          </button>
+                          <button
+                            className="mr-2 hover:text-purple-400"
+                            onClick={() => handleDeleteOrganizer(organizer.id)}
+                            title="Delete"
+                          >
+                            <FaTrash />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td
+                      colSpan="4"
+                      className="px-6 py-4 text-center text-gray-400"
+                    >
+                      No organizers found.
                     </td>
                   </tr>
-                ))}
+                )}
               </tbody>
             </table>
           </div>

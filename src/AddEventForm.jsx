@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import { collection, addDoc, doc, updateDoc } from "firebase/firestore";
-import { storage, db } from "./config/firebaseConfig";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { db } from "./config/firebaseConfig";
 
 const AddEventForm = ({ event, onAddEvent, onCancel }) => {
   const [newEvent, setNewEvent] = useState({
@@ -35,11 +36,12 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
   const handleFileChange = async (e) => {
     const { name, files } = e.target;
     const file = files[0];
-    const fileRef = storage.ref(`eventPosters/${file.name}`);
+    const storage = getStorage();
+    const fileRef = ref(storage, `EasyTix_Assets/${file.name}`);
 
     try {
-      const snapshot = await fileRef.put(file);
-      const downloadURL = await snapshot.ref.getDownloadURL();
+      await uploadBytes(fileRef, file);
+      const downloadURL = await getDownloadURL(fileRef);
       setNewEvent({ ...newEvent, [`${name}URL`]: downloadURL });
     } catch (error) {
       console.error("Error uploading file: ", error);
@@ -48,11 +50,12 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
 
   const handleSeatMapChange = async (e) => {
     const file = e.target.files[0];
-    const storageRef = storage.ref(`seatMaps/${file.name}`);
+    const storage = getStorage();
+    const storageRef = ref(storage, `EasyTix_Assets/${file.name}`);
 
     try {
-      const snapshot = await storageRef.put(file);
-      const seatMapURL = await snapshot.ref.getDownloadURL();
+      await uploadBytes(storageRef, file);
+      const seatMapURL = await getDownloadURL(storageRef);
       setNewEvent({ ...newEvent, seatMapURL });
     } catch (error) {
       console.error("Error uploading seat map file: ", error);
@@ -248,7 +251,7 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
             onChange={handleInputChange}
           />
         </div>
-        <div className="col-span-2 sm:col-span-1">
+        <div className="col-span-2">
           <label
             htmlFor="eventPoster"
             className="block text-sm font-medium text-gray-300"
@@ -260,11 +263,20 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
             id="eventPoster"
             name="eventPoster"
             className="mt-1 block w-full px-3 py-2 rounded-md border border-gray-600 shadow-sm focus:outline-none focus:ring focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-700 text-white"
-            accept="image/*"
             onChange={handleFileChange}
           />
+          {newEvent.eventPosterURL && (
+            <a
+              href={newEvent.eventPosterURL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-2 block text-sm text-indigo-500 hover:underline"
+            >
+              View Current Event Poster
+            </a>
+          )}
         </div>
-        <div className="col-span-2 sm:col-span-1">
+        <div className="col-span-2">
           <label
             htmlFor="seatMap"
             className="block text-sm font-medium text-gray-300"
@@ -276,104 +288,80 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
             id="seatMap"
             name="seatMap"
             className="mt-1 block w-full px-3 py-2 rounded-md border border-gray-600 shadow-sm focus:outline-none focus:ring focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-700 text-white"
-            accept=".pdf,.jpg,.png"
             onChange={handleSeatMapChange}
           />
+          {newEvent.seatMapURL && (
+            <a
+              href={newEvent.seatMapURL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-2 block text-sm text-indigo-500 hover:underline"
+            >
+              View Current Seat Map
+            </a>
+          )}
         </div>
         <div className="col-span-2">
-          <h3 className="text-lg font-medium text-gray-300 mb-2">Tickets</h3>
+          <h3 className="text-md font-medium text-gray-300 mb-2">Tickets</h3>
           {newEvent.tickets.map((ticket, index) => (
-            <div key={index} className="grid grid-cols-3 gap-4 mb-2">
-              <div>
-                <label
-                  htmlFor={`ticket-type-${index}`}
-                  className="block text-sm font-medium text-gray-300"
-                >
-                  Type
-                </label>
-                <input
-                  type="text"
-                  id={`ticket-type-${index}`}
-                  name="type"
-                  className="mt-1 block w-full px-3 py-2 rounded-md border border-gray-600 shadow-sm focus:outline-none focus:ring focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-700 text-white"
-                  placeholder="Ticket Type"
-                  value={ticket.type}
-                  onChange={(e) => handleTicketChange(index, e)}
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor={`ticket-price-${index}`}
-                  className="block text-sm font-medium text-gray-300"
-                >
-                  Price
-                </label>
-                <input
-                  type="number"
-                  id={`ticket-price-${index}`}
-                  name="price"
-                  className="mt-1 block w-full px-3 py-2 rounded-md border border-gray-600 shadow-sm focus:outline-none focus:ring focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-700 text-white"
-                  placeholder="Ticket Price"
-                  value={ticket.price}
-                  onChange={(e) => handleTicketChange(index, e)}
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor={`ticket-quantity-${index}`}
-                  className="block text-sm font-medium text-gray-300"
-                >
-                  Quantity
-                </label>
-                <input
-                  type="number"
-                  id={`ticket-quantity-${index}`}
-                  name="quantity"
-                  className="mt-1 block w-full px-3 py-2 rounded-md border border-gray-600 shadow-sm focus:outline-none focus:ring focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-700 text-white"
-                  placeholder="Ticket Quantity"
-                  value={ticket.quantity}
-                  onChange={(e) => handleTicketChange(index, e)}
-                />
-              </div>
-              <div className="flex items-end">
-                {index === newEvent.tickets.length - 1 && (
-                  <button
-                    type="button"
-                    className="ml-2 px-3 py-2 rounded-md bg-purple-900 text-white hover:bg-purple-800 focus:outline-none focus:ring focus:ring-purple-500 focus:border-purple-500"
-                    onClick={handleAddTicket}
-                  >
-                    Add Ticket
-                  </button>
-                )}
-                {index < newEvent.tickets.length - 1 && (
-                  <button
-                    type="button"
-                    className="ml-2 px-3 py-2 rounded-md bg-gray-600 text-white hover:bg-gray-500 focus:outline-none focus:ring focus:ring-red-500 focus:border-red-500"
-                    onClick={() => handleRemoveTicket(index)}
-                  >
-                    Remove
-                  </button>
-                )}
-              </div>
+            <div key={index} className="grid grid-cols-3 gap-2 mb-2">
+              <input
+                type="text"
+                name="type"
+                placeholder="Ticket Type"
+                value={ticket.type}
+                onChange={(e) => handleTicketChange(index, e)}
+                className="px-3 py-2 rounded-md border border-gray-600 shadow-sm focus:outline-none focus:ring focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-700 text-white"
+              />
+              <input
+                type="number"
+                name="price"
+                placeholder="Price"
+                value={ticket.price}
+                onChange={(e) => handleTicketChange(index, e)}
+                className="px-3 py-2 rounded-md border border-gray-600 shadow-sm focus:outline-none focus:ring focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-700 text-white"
+              />
+              <input
+                type="number"
+                name="quantity"
+                placeholder="Quantity"
+                value={ticket.quantity}
+                onChange={(e) => handleTicketChange(index, e)}
+                className="px-3 py-2 rounded-md border border-gray-600 shadow-sm focus:outline-none focus:ring focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-700 text-white"
+              />
+              <button
+                type="button"
+                onClick={() => handleRemoveTicket(index)}
+                className="px-3 py-2 rounded-md border border-gray-600 shadow-sm focus:outline-none focus:ring focus:ring-red-500 focus:border-red-500 sm:text-sm bg-red-700 text-white"
+              >
+                Remove
+              </button>
             </div>
           ))}
+          <button
+            type="button"
+            onClick={handleAddTicket}
+            className="mt-2 px-4 py-2 rounded-md border border-gray-600 shadow-sm focus:outline-none focus:ring focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-indigo-700 text-white"
+          >
+            Add Ticket
+          </button>
         </div>
-      </div>
-      <div className="mt-4 flex justify-end">
-        <button
-          type="button"
-          className="px-4 py-2 rounded-md bg-purple-900 text-white hover:bg-purple-800 focus:outline-none focus:ring focus:ring-green-500 focus:border-green-500 mr-2"
-          onClick={handleAddEvent}
-        >
-          {event ? "Update Event" : "Add Event"}
-        </button>
-        <button
-          type="button"
-          className="px-4 py-2 rounded-md bg-gray-600 text-white hover:bg-gray-500 focus:outline-none focus:ring focus:ring-gray-500 focus:border-gray-500"
-          onClick={handleCancel}
-        >
-          Cancel
-        </button>
+        <div className="col-span-2 flex justify-end">
+          <button
+            type="button"
+            onClick={handleCancel}
+            className="px-4 py-2 rounded-md border border-gray-600 shadow-sm focus:outline-none focus:ring focus:ring-gray-500 focus:border-gray-500 sm:text-sm bg-gray-700 text-white mr-2"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={handleAddEvent}
+            className="px-4 py-2 rounded-md border border-gray-600 shadow-sm focus:outline-none focus:ring focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-indigo-700 text-white"
+          >
+            {event ? "Update Event" : "Add Event"}
+          </button>
+        </div>
       </div>
     </div>
   );
