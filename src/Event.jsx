@@ -92,10 +92,13 @@ const EventComponent = () => {
     window.location.reload(); // Reload the page
   };
 
-  const getFirstSentence = (text) => {
-    // Split by periods and take the first sentence
-    const sentences = text.split(".");
-    return sentences[0] + ".";
+  const getFirstWords = (text, wordCount) => {
+    // Split the text by spaces and take the first `wordCount` words
+    const words = text.split(" ");
+    return (
+      words.slice(0, wordCount).join(" ") +
+      (words.length > wordCount ? "..." : "")
+    );
   };
 
   const openDetails = (eventId) => {
@@ -243,8 +246,8 @@ const EventComponent = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
                       {event.name}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                      {getFirstSentence(event.description)}
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300 max-w-xs break-words">
+                      {getFirstWords(event.description, 4)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
                       {event.venue}
