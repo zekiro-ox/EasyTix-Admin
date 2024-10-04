@@ -13,6 +13,7 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
     startTime: "",
     endTime: "",
     venue: "",
+    status: "Starting Soon", // Added the status field with a default value
     eventPosterURL: "",
     seatMapURL: "",
     tickets: [{ type: "", price: "", quantity: "" }],
@@ -21,7 +22,7 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
   const [formVisible, setFormVisible] = useState(true); // State to manage form visibility
 
   useEffect(() => {
-    if (event) {
+    if (event && event.id) {
       setNewEvent(event);
     } else {
       resetForm();
@@ -84,7 +85,8 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
 
   const handleAddEvent = async () => {
     try {
-      if (event) {
+      if (event && event.id) {
+        // Check if event and event.id are defined
         const eventRef = doc(db, "events", event.id);
         await updateDoc(eventRef, newEvent);
         console.log("Document updated with ID: ", event.id);
@@ -96,8 +98,8 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
           seatMapURL: newEvent.seatMapURL,
         });
         console.log("Document written with ID: ", docRef.id);
+        onAddEvent({ id: docRef.id, ...newEvent }); // Pass the added event object
       }
-      onAddEvent();
       resetForm();
       setFormVisible(false); // Close the form after successful addition or update
     } catch (error) {
@@ -120,6 +122,7 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
       startTime: "",
       endTime: "",
       venue: "",
+      status: "Starting Soon", // Reset status to default value
       eventPosterURL: "",
       seatMapURL: "",
       tickets: [{ type: "", price: "", quantity: "" }],
@@ -152,6 +155,25 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
             value={newEvent.name}
             onChange={handleInputChange}
           />
+        </div>
+        <div className="col-span-2 sm:col-span-1">
+          <label
+            htmlFor="status"
+            className="block text-sm font-medium text-gray-300"
+          >
+            Status
+          </label>
+          <select
+            id="status"
+            name="status"
+            className="mt-1 block w-full px-3 py-2 rounded-md border border-gray-600 shadow-sm focus:outline-none focus:ring focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-700 text-white"
+            value={newEvent.status}
+            onChange={handleInputChange}
+          >
+            <option value="Starting Soon">Starting Soon</option>
+            <option value="Ongoing">Ongoing</option>
+            <option value="Closed">Closed</option>
+          </select>
         </div>
         <div className="col-span-2 sm:col-span-1">
           <label

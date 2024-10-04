@@ -56,18 +56,20 @@ const EventComponent = () => {
 
   const handleAddEvent = async (newEvent) => {
     try {
-      const eventsRef = collection(db, "events");
-      const docRef = await addDoc(eventsRef, newEvent);
-      const addedEvent = { id: docRef.id, ...newEvent };
-      setEvents([...events, addedEvent]);
-      setNewEventData(addedEvent); // Store the newly added event data
-      setShowAddForm(false); // Hide the form after adding event
+      const existingEvent = events.find((event) => event.id === newEvent.id);
+      if (!existingEvent) {
+        setEvents([...events, newEvent]);
+      }
     } catch (error) {
       console.error("Error adding event: ", error);
     }
   };
 
   const handleEditEvent = async (editedEvent) => {
+    if (!editedEvent || !editedEvent.id) {
+      console.error("Invalid event data:", editedEvent);
+      return;
+    }
     try {
       const eventDocRef = doc(db, "events", editedEvent.id);
       await updateDoc(eventDocRef, editedEvent);
@@ -109,6 +111,10 @@ const EventComponent = () => {
 
   const openEditForm = (eventId) => {
     const eventToEdit = events.find((event) => event.id === eventId);
+    if (!eventToEdit) {
+      console.error("Event not found for ID:", eventId);
+      return;
+    }
     setSelectedEvent(eventToEdit);
     setShowEditForm(true);
   };

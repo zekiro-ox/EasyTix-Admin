@@ -14,7 +14,7 @@ const EventDetailsModal = ({ event, onClose }) => {
         >
           &#8203;
         </span>
-        <div className="inline-block align-bottom bg-gray-800 text-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+        <div className="inline-block align-bottom bg-gray-800 text-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
           <div className="bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
             <div className="sm:flex sm:items-start">
               <div className="mt-3 text-center sm:mt-0 sm:text-left">
@@ -74,6 +74,12 @@ const EventDetailsModal = ({ event, onClose }) => {
                     </label>
                     <p className="mt-1 text-sm text-gray-100">{event.venue}</p>
                   </div>
+                  <div className="col-span-2 sm:col-span-1">
+                    <label className="block text-sm font-medium text-gray-400">
+                      Status:
+                    </label>
+                    <p className="mt-1 text-sm text-gray-100">{event.status}</p>
+                  </div>
                   {event.tickets && event.tickets.length > 0 && (
                     <div className="col-span-2">
                       <label className="block text-sm font-medium text-gray-400">
@@ -99,48 +105,55 @@ const EventDetailsModal = ({ event, onClose }) => {
                       </div>
                     </div>
                   )}
-                  {event.eventPosterURL && (
-                    <div className="col-span-2">
-                      <label className="block text-sm font-medium text-gray-400">
-                        Event Poster:
-                      </label>
-                      <div className="mt-1">
-                        <a
-                          href={event.eventPosterURL}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="block text-sm text-indigo-500 hover:underline"
-                        >
-                          View Event Poster
-                        </a>
-                        <img
-                          src={event.eventPosterURL}
-                          alt="Event Poster"
-                          className="mt-2 rounded-md border border-gray-600"
-                        />
-                      </div>
-                    </div>
-                  )}
-                  {event.seatMapURL && (
-                    <div className="col-span-2">
-                      <label className="block text-sm font-medium text-gray-400">
-                        Seat Map:
-                      </label>
-                      <div className="mt-1">
-                        <a
-                          href={event.seatMapURL}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="block text-sm text-indigo-500 hover:underline"
-                        >
-                          View Seat Map
-                        </a>
-                        <img
-                          src={event.seatMapURL}
-                          alt="Seat Map"
-                          className="mt-2 rounded-md border border-gray-600"
-                        />
-                      </div>
+                  {/* Poster and Seat Map in the same row */}
+                  {(event.eventPosterURL || event.seatMapURL) && (
+                    <div className="col-span-2 grid grid-cols-2 gap-4">
+                      {event.eventPosterURL && (
+                        <div className="col-span-1">
+                          <label className="block text-sm font-medium text-gray-400">
+                            Event Poster:
+                          </label>
+                          <div className="mt-1">
+                            <a
+                              href={event.eventPosterURL}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="block text-sm text-indigo-500 hover:underline"
+                            >
+                              View Event Poster
+                            </a>
+                            <img
+                              src={event.eventPosterURL}
+                              alt="Event Poster"
+                              className="mt-2 rounded-md border border-gray-600"
+                              style={{ width: "200px", height: "300px" }} // Set fixed size for the poster
+                            />
+                          </div>
+                        </div>
+                      )}
+                      {event.seatMapURL && (
+                        <div className="col-span-1">
+                          <label className="block text-sm font-medium text-gray-400">
+                            Seat Map:
+                          </label>
+                          <div className="mt-1">
+                            <a
+                              href={event.seatMapURL}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="block text-sm text-indigo-500 hover:underline"
+                            >
+                              View Seat Map
+                            </a>
+                            <img
+                              src={event.seatMapURL}
+                              alt="Seat Map"
+                              className="mt-2 rounded-md border border-gray-600"
+                              style={{ width: "300px", height: "200px" }} // Set fixed size for the seat map
+                            />
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -170,12 +183,13 @@ EventDetailsModal.propTypes = {
     startTime: PropTypes.string,
     endTime: PropTypes.string,
     venue: PropTypes.string,
+    status: PropTypes.string,
     eventPosterURL: PropTypes.string,
     seatMapURL: PropTypes.string,
     tickets: PropTypes.arrayOf(
       PropTypes.shape({
         type: PropTypes.string,
-        price: PropTypes.number, // Ensure price is expected as number
+        price: PropTypes.number,
         quantity: PropTypes.number,
       })
     ),
