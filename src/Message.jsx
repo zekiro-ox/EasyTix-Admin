@@ -44,7 +44,7 @@ const MessageComponent = () => {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row min-h-screen bg-gray-900 text-gray-100">
+    <div className="font-kanit flex flex-col lg:flex-row min-h-screen bg-gray-900 text-gray-100">
       <Sidebar />
       <div className="flex-1 flex flex-col pt-16 pr-5 pl-5 pb-5 lg:ml-64">
         {selectedMessage ? (

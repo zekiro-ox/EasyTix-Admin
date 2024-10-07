@@ -41,7 +41,7 @@ const ChatComponent = ({ message, onClose, messages, setMessages }) => {
   };
 
   return (
-    <div className="bg-gray-900 text-gray-100 rounded-lg shadow-md p-6 w-full lg:w-3/4 mx-auto mt-16">
+    <div className="font-kanit bg-gray-900 text-gray-100 rounded-lg shadow-md p-6 w-full lg:w-3/4 mx-auto mt-16">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-semibold">{message.subject}</h2>
       </div>

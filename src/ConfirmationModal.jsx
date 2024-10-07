@@ -2,7 +2,7 @@ import React from "react";
 
 const ConfirmationModal = ({ message, onAccept, onCancel }) => {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div className="font-kanit fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black opacity-50"></div>
       <div className="bg-gray-900 rounded-lg p-8 z-10">
         <p className="text-lg text-white font-semibold">{message}</p>

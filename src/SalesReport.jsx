@@ -145,7 +145,7 @@ const SalesReport = ({ salesData }) => {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row min-h-screen bg-gray-900 text-white">
+    <div className="font-kanit flex flex-col lg:flex-row min-h-screen bg-gray-900 text-white">
       <Sidebar />
       <div className="flex-1 flex flex-col pt-16 pr-5 pl-5 pb-5 lg:ml-64">
         <div className="bg-purple-800 p-6 rounded-t-2xl">

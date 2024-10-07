@@ -23,7 +23,7 @@ const SalesReport = ({ data }) => {
   const averageTicketsPerDay = (totalTicketsSold / data.length).toFixed(2);
 
   return (
-    <div className="bg-gray-800 rounded-lg shadow-md p-6 text-white">
+    <div className="font-kanit bg-gray-800 rounded-lg shadow-md p-6 text-white">
       <h2 className="text-2xl font-semibold mb-4">Sales Report</h2>
       <div className="mb-4">
         <p className="font-medium text-gray-300">Total Ticket Sold:</p>

@@ -32,7 +32,7 @@ const AdminDashboard = ({ salesData }) => {
       <Sidebar />
       <div className="flex-1 flex flex-col pt-16 pr-5 pl-5 pb-5 lg:ml-64">
         <div className="bg-purple-800 p-6 rounded-t-2xl">
-          <div className="bg-gray-900 p-8 rounded-2xl shadow-2xl w-full lg:w-96">
+          <div className="font-kanit bg-gray-900 p-8 rounded-2xl shadow-2xl w-full lg:w-96">
             <h2 className="text-3xl mb-4 text-center font-bold text-purple-400">
               Dashboard
             </h2>
@@ -44,7 +44,7 @@ const AdminDashboard = ({ salesData }) => {
 
         <div className="flex flex-col lg:flex-row mt-6 space-y-6 lg:space-x-6 lg:space-y-0">
           {/* Sales Report Container */}
-          <div className="bg-gray-900 p-6 rounded-2xl shadow-2xl w-full lg:w-1/2">
+          <div className="font-kanit bg-gray-900 p-6 rounded-2xl shadow-2xl w-full lg:w-1/2">
             <h3 className="text-2xl mb-4 text-center font-bold text-purple-400">
               Event Ticket Sales
             </h3>
@@ -73,7 +73,7 @@ const AdminDashboard = ({ salesData }) => {
           </div>
 
           {/* Customer Feedback Container */}
-          <div className="bg-gray-900 p-6 rounded-2xl shadow-2xl w-full lg:w-1/2">
+          <div className="font-kanit bg-gray-900 p-6 rounded-2xl shadow-2xl w-full lg:w-1/2">
             <h3 className="text-2xl mb-4 text-center font-bold text-purple-400">
               Customer Feedback
             </h3>

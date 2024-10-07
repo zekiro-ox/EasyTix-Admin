@@ -35,7 +35,7 @@ const EditOrganizerForm = ({ organizer, onSaveOrganizer, onCancel }) => {
 
   return (
     <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-gray-800 rounded-lg shadow-md p-6 w-full max-w-md text-gray-100">
+      <div className="font-kanit bg-gray-800 rounded-lg shadow-md p-6 w-full max-w-md text-gray-100">
         <h2 className="text-xl font-semibold mb-4">Edit Organizer</h2>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">

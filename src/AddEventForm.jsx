@@ -134,7 +134,7 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
   }
 
   return (
-    <div className="mb-4 bg-gray-800 rounded-lg shadow-md p-4 text-white">
+    <div className="font-kanit mb-4 bg-gray-800 rounded-lg shadow-md p-4 text-white">
       <h2 className="text-lg font-medium mb-4">
         {event ? "Edit Event" : "Add New Event"}
       </h2>

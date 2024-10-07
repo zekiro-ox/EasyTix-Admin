@@ -73,7 +73,7 @@ const Sidebar = () => {
           <div className="flex items-center justify-center mb-4">
             <img src={Logo} alt="Logo" className="h-20 w-auto" />
           </div>
-          <ul className="space-y-2 font-medium text-white">
+          <ul className="font-kanit space-y-2 font-medium text-white">
             <li className="flex items-center p-4 rounded text-white font-bold text-2xl">
               <FaUserShield className="flex-shrink-0 w-5 h-5 mr-2" />
               <span className="flex-1 ms-3 whitespace-nowrap">Admin</span>

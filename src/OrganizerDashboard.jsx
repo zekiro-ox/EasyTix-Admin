@@ -50,7 +50,7 @@ const OrganizerDashboard = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-900 text-white">
-      <header className="flex items-center justify-between p-4 bg-gray-800">
+      <header className="font-kanit flex items-center justify-between p-4 bg-gray-800">
         <Link to="/" className="flex items-center">
           <img src={Logo} alt="Company Logo" className="h-8" />
         </Link>

@@ -162,7 +162,7 @@ const EventComponent = () => {
   return (
     <div className="flex flex-col lg:flex-row min-h-screen bg-gray-900 text-white">
       <Sidebar />
-      <div className="flex-1 flex flex-col pt-16 pr-5 pl-5 pb-5 lg:ml-64">
+      <div className="font-kanit flex-1 flex flex-col pt-16 pr-5 pl-5 pb-5 lg:ml-64">
         <div className="bg-gray-800 rounded-lg shadow-md p-6">
           <div className="mb-4 flex flex-col lg:flex-row items-start lg:items-center justify-between">
             <div className="relative flex-1 w-full lg:w-auto mb-4 lg:mb-0 lg:mr-4">
