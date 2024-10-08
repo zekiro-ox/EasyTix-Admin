@@ -38,7 +38,21 @@ const EventDetailsModal = ({ event, onClose }) => {
                   </div>
                   <div className="col-span-2 sm:col-span-1">
                     <label className="block text-sm font-medium text-gray-400">
-                      Start Date:
+                      Status:
+                    </label>
+                    <p className="mt-1 text-sm text-gray-100">{event.status}</p>
+                  </div>
+                  <div className="col-span-2 sm:col-span-1">
+                    <label className="block text-sm font-medium text-gray-400">
+                      Event Start Date:
+                    </label>
+                    <p className="mt-1 text-sm text-gray-100">
+                      {event.eventStartDate}
+                    </p>
+                  </div>
+                  <div className="col-span-2 sm:col-span-1">
+                    <label className="block text-sm font-medium text-gray-400">
+                      Registration Start Date:
                     </label>
                     <p className="mt-1 text-sm text-gray-100">
                       {event.startDate}
@@ -46,7 +60,7 @@ const EventDetailsModal = ({ event, onClose }) => {
                   </div>
                   <div className="col-span-2 sm:col-span-1">
                     <label className="block text-sm font-medium text-gray-400">
-                      End Date:
+                      Registration End Date:
                     </label>
                     <p className="mt-1 text-sm text-gray-100">
                       {event.endDate}
@@ -54,7 +68,7 @@ const EventDetailsModal = ({ event, onClose }) => {
                   </div>
                   <div className="col-span-2 sm:col-span-1">
                     <label className="block text-sm font-medium text-gray-400">
-                      Start Time:
+                      Event Start Time:
                     </label>
                     <p className="mt-1 text-sm text-gray-100">
                       {event.startTime}
@@ -62,7 +76,7 @@ const EventDetailsModal = ({ event, onClose }) => {
                   </div>
                   <div className="col-span-2 sm:col-span-1">
                     <label className="block text-sm font-medium text-gray-400">
-                      End Time:
+                      Event End Time:
                     </label>
                     <p className="mt-1 text-sm text-gray-100">
                       {event.endTime}
@@ -73,12 +87,6 @@ const EventDetailsModal = ({ event, onClose }) => {
                       Venue:
                     </label>
                     <p className="mt-1 text-sm text-gray-100">{event.venue}</p>
-                  </div>
-                  <div className="col-span-2 sm:col-span-1">
-                    <label className="block text-sm font-medium text-gray-400">
-                      Status:
-                    </label>
-                    <p className="mt-1 text-sm text-gray-100">{event.status}</p>
                   </div>
                   {event.tickets && event.tickets.length > 0 && (
                     <div className="col-span-2">
@@ -184,6 +192,7 @@ EventDetailsModal.propTypes = {
     endTime: PropTypes.string,
     venue: PropTypes.string,
     status: PropTypes.string,
+    eventStartDate: PropTypes.string,
     eventPosterURL: PropTypes.string,
     seatMapURL: PropTypes.string,
     tickets: PropTypes.arrayOf(

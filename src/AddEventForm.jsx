@@ -13,7 +13,8 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
     startTime: "",
     endTime: "",
     venue: "",
-    status: "Starting Soon", // Added the status field with a default value
+    status: "Starting Soon",
+    eventStartDate: "", // Added the status field with a default value
     eventPosterURL: "",
     seatMapURL: "",
     tickets: [{ type: "", price: "", quantity: "" }],
@@ -122,7 +123,8 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
       startTime: "",
       endTime: "",
       venue: "",
-      status: "Starting Soon", // Reset status to default value
+      status: "Starting Soon",
+      eventStartDate: "", // Reset status to default value
       eventPosterURL: "",
       seatMapURL: "",
       tickets: [{ type: "", price: "", quantity: "" }],
@@ -177,6 +179,22 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
         </div>
         <div className="col-span-2 sm:col-span-1">
           <label
+            htmlFor="eventStartDate"
+            className="block text-sm font-medium text-gray-300"
+          >
+            Event Start Date
+          </label>
+          <input
+            type="date"
+            id="eventStartDate"
+            name="eventStartDate"
+            className="mt-1 block w-full px-3 py-2 rounded-md border border-gray-600 shadow-sm focus:outline-none focus:ring focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-700 text-white"
+            value={newEvent.eventStartDate}
+            onChange={handleInputChange}
+          />
+        </div>
+        <div className="col-span-2 sm:col-span-1">
+          <label
             htmlFor="description"
             className="block text-sm font-medium text-gray-300"
           >
@@ -197,7 +215,7 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
             htmlFor="startDate"
             className="block text-sm font-medium text-gray-300"
           >
-            Start Date
+            Registration Start Date
           </label>
           <input
             type="date"
@@ -213,7 +231,7 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
             htmlFor="endDate"
             className="block text-sm font-medium text-gray-300"
           >
-            End Date
+            Registration End Date
           </label>
           <input
             type="date"
@@ -229,7 +247,7 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
             htmlFor="startTime"
             className="block text-sm font-medium text-gray-300"
           >
-            Start Time
+            Event Start Time
           </label>
           <input
             type="time"
@@ -245,7 +263,7 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
             htmlFor="endTime"
             className="block text-sm font-medium text-gray-300"
           >
-            End Time
+            Event End Time
           </label>
           <input
             type="time"
