@@ -1,43 +1,62 @@
 import React, { useState, useEffect } from "react";
 import { FaArrowLeft } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import { getFirestore, collection, getDocs } from "firebase/firestore"; // Import Firestore functions
 import { Html5QrcodeScanner } from "html5-qrcode";
 import Modal from "./Modal"; // Import the Modal component
 
 const EventPanel = ({ event }) => {
   const navigate = useNavigate();
-
-  const [registeredUsers] = useState([
-    {
-      id: 1,
-      name: "John Doe",
-      email: "john.doe@example.com",
-      phoneNumber: "123-456-7890",
-      ticketType: "VIP",
-      quantity: 2,
-    },
-    {
-      id: 2,
-      name: "Jane Smith",
-      email: "jane.smith@example.com",
-      phoneNumber: "234-567-8901",
-      ticketType: "Regular",
-      quantity: 1,
-    },
-    {
-      id: 3,
-      name: "Michael Johnson",
-      email: "michael.johnson@example.com",
-      phoneNumber: "345-678-9012",
-      ticketType: "VIP",
-      quantity: 3,
-    },
-    // Add more users as needed
-  ]);
-
+  const [registeredUsers, setRegisteredUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isQrScannerOpen, setIsQrScannerOpen] = useState(false);
   const [scannedTickets, setScannedTickets] = useState([]);
+
+  useEffect(() => {
+    const fetchRegisteredUsers = async () => {
+      if (!event) {
+        console.log("No event found.");
+        return; // Ensure the event exists
+      }
+
+      try {
+        const db = getFirestore();
+        const customersCollection = collection(
+          db,
+          `events/${event.id}/customers`
+        ); // Reference to customers subcollection
+        console.log("Fetching from:", `events/${event.id}/customers`); // Log the path
+
+        const customersSnapshot = await getDocs(customersCollection);
+
+        if (customersSnapshot.empty) {
+          console.log("No registered users found.");
+          return;
+        }
+
+        // Map the customers into an array
+        const usersList = customersSnapshot.docs.map((doc) => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            name: `${data.firstName} ${data.lastName}`, // Combine firstName and lastName
+            email: data.email,
+            phoneNumber: data.phoneNumber,
+            ticketType: data.ticketType,
+            quantity: data.quantity,
+            status: "Confirmed", // Assuming status is always confirmed for registered users
+          };
+        });
+
+        console.log("Registered users:", usersList); // Log the users fetched
+        setRegisteredUsers(usersList); // Set the registered users in state
+      } catch (error) {
+        console.error("Error fetching registered users:", error);
+      }
+    };
+
+    fetchRegisteredUsers();
+  }, [event]);
 
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
@@ -63,12 +82,12 @@ const EventPanel = ({ event }) => {
           const [name, email, phoneNumber, ticketType, quantity] =
             qrCodeMessage.split(",");
           const newTicket = {
-            id: scannedTickets.length + 1, // Assign id based on length of scannedTickets array
+            id: scannedTickets.length + 1,
             name,
             email,
             phoneNumber,
             ticketType,
-            quantity, // Keep quantity as string
+            quantity,
             status: "Confirmed",
           };
           setScannedTickets((prevTickets) => [...prevTickets, newTicket]);

@@ -1,22 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FaUserCircle, FaSignOutAlt, FaCalendarAlt } from "react-icons/fa";
+import { getFirestore, collection, getDocs } from "firebase/firestore"; // Import Firestore functions
 import Logo from "./assets/CompanyLogo.png";
 import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
 import "./OrganizerDashboard.css"; // Import CSS for animations
-
-const events = [
-  { id: 1, name: "Event 1", description: "Description for Event 1" },
-  { id: 2, name: "Event 2", description: "Description for Event 2" },
-  { id: 3, name: "Event 3", description: "Description for Event 3" },
-  { id: 4, name: "Event 4", description: "Description for Event 4" },
-  { id: 5, name: "Event 5", description: "Description for Event 5" },
-  { id: 6, name: "Event 6", description: "Description for Event 6" },
-  { id: 7, name: "Event 7", description: "Description for Event 7" },
-  { id: 8, name: "Event 8", description: "Description for Event 8" },
-  { id: 9, name: "Event 9", description: "Description for Event 9" },
-];
 
 const responsive = {
   superLargeDesktop: { breakpoint: { max: 4000, min: 1024 }, items: 3 },
@@ -26,14 +15,42 @@ const responsive = {
 };
 
 const OrganizerDashboard = () => {
+  const [events, setEvents] = useState([]); // State for storing events
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [showDropdown, setShowDropdown] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false); // State for logout loading animation
   const navigate = useNavigate();
 
+  useEffect(() => {
+    const fetchEvents = async () => {
+      const db = getFirestore();
+      const eventsCollection = collection(db, "events");
+      const eventsSnapshot = await getDocs(eventsCollection);
+      const eventsList = eventsSnapshot.docs.map((doc) => ({
+        id: doc.id, // Include the document ID
+        ...doc.data(),
+      }));
+      setEvents(eventsList); // Set the fetched events to state
+    };
+
+    fetchEvents();
+  }, []);
+
+  // Function to format date
+  const getFormattedDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString();
+  };
+
+  // Function to format time
+  const getFormattedTime = (timeString) => {
+    const time = new Date(`1970-01-01T${timeString}`); // Assuming timeString is in HH:MM format
+    return time.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  };
+
   const handleEventClick = (event) => {
     setSelectedEvent(event);
-    navigate(`/event/${event.id}`);
+    navigate(`/event/${event.id}`, { state: { event } }); // Pass the event data
   };
 
   const handleLogout = () => {
@@ -49,7 +66,7 @@ const OrganizerDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-900 text-white">
+    <div className="min-h-screen flex flex-col bg-gray-900 text-white font-kanit">
       <header className="font-kanit flex items-center justify-between p-4 bg-gray-800">
         <Link to="/" className="flex items-center">
           <img src={Logo} alt="Company Logo" className="h-8" />
@@ -97,7 +114,11 @@ const OrganizerDashboard = () => {
                       <FaCalendarAlt className="text-white mr-2" />
                       <h3 className="text-2xl font-bold">{event.name}</h3>
                     </div>
-                    <p className="text-lg">{event.description}</p>
+                    <p className="text-lg">
+                      {/* Use the new functions to format date and time */}
+                      {getFormattedDate(event.eventStartDate)}{" "}
+                      {getFormattedTime(event.startTime)}
+                    </p>
                   </div>
                 ))}
               </Carousel>
