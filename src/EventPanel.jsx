@@ -84,33 +84,45 @@ const EventPanel = () => {
 
       qrCodeScanner.render(
         async (qrCodeMessage) => {
-          const [name, email, phoneNumber, ticketType, quantity] =
-            qrCodeMessage.split(",");
+          try {
+            // Parse the JSON string
+            const ticketData = JSON.parse(qrCodeMessage);
+            const {
+              firstName,
+              lastName,
+              email,
+              phoneNumber,
+              ticketType,
+              quantity,
+            } = ticketData;
 
-          // Find the user in the registered users list
-          const user = registeredUsers.find((user) => user.email === email);
+            // Find the user in the registered users list
+            const user = registeredUsers.find((user) => user.email === email);
 
-          if (user) {
-            // Update Firestore document for the matched user
-            const userDocRef = doc(
-              getFirestore(),
-              `events/${event.id}/customers`,
-              user.id
-            );
-            await updateDoc(userDocRef, {
-              status: "Registered", // Update status to Registered
-            });
+            if (user) {
+              // Update Firestore document for the matched user
+              const userDocRef = doc(
+                getFirestore(),
+                `events/${event.id}/customers`,
+                user.id
+              );
+              await updateDoc(userDocRef, {
+                status: "Registered", // Update status to Registered
+              });
 
-            // Optionally, update local state to reflect the change
-            setRegisteredUsers((prevUsers) =>
-              prevUsers.map((u) =>
-                u.id === user.id ? { ...u, status: "Registered" } : u
-              )
-            );
+              // Optionally, update local state to reflect the change
+              setRegisteredUsers((prevUsers) =>
+                prevUsers.map((u) =>
+                  u.id === user.id ? { ...u, status: "Registered" } : u
+                )
+              );
 
-            console.log(`User  ${name} is now registered.`);
-          } else {
-            console.log("No matching user found for the scanned ticket.");
+              console.log(`User  ${firstName} ${lastName} is now registered.`);
+            } else {
+              console.log("No matching user found for the scanned ticket.");
+            }
+          } catch (error) {
+            console.error("Error parsing QR code data:", error);
           }
 
           qrCodeScanner.clear();
@@ -127,7 +139,7 @@ const EventPanel = () => {
         qrCodeScanner.clear();
       };
     }
-  }, [isQrScannerOpen, scannedTickets, registeredUsers, event]);
+  }, [isQrScannerOpen, registeredUsers, event]);
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-900 text-white">
