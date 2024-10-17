@@ -1,157 +1,55 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaSearch, FaFolder } from "react-icons/fa";
 import Sidebar from "./Sidebar";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "./config/firebaseConfig"; // Import your Firestore instance
 
 const UsersComponent = () => {
-  const [users] = useState([
-    {
-      id: 1,
-      name: "John Doe",
-      email: "john.doe@example.com",
-      event: "Event 1",
-      startDate: "2023-01-10",
-      endDate: "2023-01-12",
-      ticketType: "VIP",
-      quantity: 2,
-      amount: "$200",
-      status: "Registered",
-    },
-    {
-      id: 2,
-      name: "Jane Smith",
-      email: "jane.smith@example.com",
-      event: "Event 2",
-      startDate: "2023-02-15",
-      endDate: "2023-02-16",
-      ticketType: "General",
-      quantity: 1,
-      amount: "$50",
-      status: "Not Registered",
-    },
-    {
-      id: 3,
-      name: "Alice Johnson",
-      email: "alice.johnson@example.com",
-      event: "Event 1",
-      startDate: "2023-01-10",
-      endDate: "2023-01-12",
-      ticketType: "VIP",
-      quantity: 1,
-      amount: "$100",
-      status: "Registered",
-    },
-    {
-      id: 4,
-      name: "Bob Brown",
-      email: "bob.brown@example.com",
-      event: "Event 2",
-      startDate: "2023-02-15",
-      endDate: "2023-02-16",
-      ticketType: "General",
-      quantity: 3,
-      amount: "$150",
-      status: "Registered",
-    },
-    {
-      id: 5,
-      name: "Charlie Davis",
-      email: "charlie.davis@example.com",
-      event: "Event 3",
-      startDate: "2023-03-10",
-      endDate: "2023-03-12",
-      ticketType: "Premium",
-      quantity: 2,
-      amount: "$300",
-      status: "Not Registered",
-    },
-    {
-      id: 6,
-      name: "Dana Lee",
-      email: "dana.lee@example.com",
-      event: "Event 3",
-      startDate: "2023-03-10",
-      endDate: "2023-03-12",
-      ticketType: "Premium",
-      quantity: 1,
-      amount: "$150",
-      status: "Registered",
-    },
-    {
-      id: 7,
-      name: "Eve Campbell",
-      email: "eve.campbell@example.com",
-      event: "Event 1",
-      startDate: "2023-01-10",
-      endDate: "2023-01-12",
-      ticketType: "General",
-      quantity: 1,
-      amount: "$50",
-      status: "Registered",
-    },
-    {
-      id: 8,
-      name: "Frank Green",
-      email: "frank.green@example.com",
-      event: "Event 2",
-      startDate: "2023-02-15",
-      endDate: "2023-02-16",
-      ticketType: "VIP",
-      quantity: 2,
-      amount: "$200",
-      status: "Not Registered",
-    },
-    {
-      id: 9,
-      name: "Grace Hall",
-      email: "grace.hall@example.com",
-      event: "Event 3",
-      startDate: "2023-03-10",
-      endDate: "2023-03-12",
-      ticketType: "General",
-      quantity: 3,
-      amount: "$150",
-      status: "Registered",
-    },
-    {
-      id: 10,
-      name: "Henry King",
-      email: "henry.king@example.com",
-      event: "Event 1",
-      startDate: "2023-01-10",
-      endDate: "2023-01-12",
-      ticketType: "VIP",
-      quantity: 1,
-      amount: "$100",
-      status: "Not Registered",
-    },
-    // Add more users as needed
-  ]);
-
+  const [users, setUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedEvent, setSelectedEvent] = useState(null);
+  const [events, setEvents] = useState([]); // To hold the events
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+      // Fetch events from Firestore
+      const eventsCollection = collection(db, "events");
+      const eventDocs = await getDocs(eventsCollection);
+      const eventList = eventDocs.docs.map((doc) => ({
+        id: doc.id,
+        name: doc.data().name, // Assuming the event name is stored in the 'name' field
+        eventStartDate: doc.data().eventStartDate, // Fetch the event start date
+      }));
+      setEvents(eventList);
+    };
+
+    fetchEvents();
+  }, []);
 
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
   };
 
-  const handleFolderClick = (eventName) => {
-    setSelectedEvent(eventName);
+  const handleFolderClick = async (eventId) => {
+    setSelectedEvent(eventId);
+    const customersCollection = collection(db, `events/${eventId}/customers`);
+    const customerDocs = await getDocs(customersCollection);
+    const customerData = customerDocs.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+    setUsers(customerData);
   };
 
-  const groupedUsers = users.reduce((acc, user) => {
-    if (!acc[user.event]) acc[user.event] = [];
-    acc[user.event].push(user);
-    return acc;
-  }, {});
-
-  const filteredEvents = Object.keys(groupedUsers).filter((eventName) =>
-    eventName.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredEvents = events.filter((event) =>
+    event.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const filteredUsers = selectedEvent
-    ? groupedUsers[selectedEvent].filter((user) =>
-        user.name.toLowerCase().includes(searchTerm.toLowerCase())
-      )
+    ? users.filter((user) => {
+        const fullName = `${user.firstName} ${user.lastName}`.toLowerCase();
+        return fullName.includes(searchTerm.toLowerCase());
+      })
     : [];
 
   return (
@@ -178,20 +76,20 @@ const UsersComponent = () => {
 
           {!selectedEvent ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {filteredEvents.map((eventName) => (
+              {filteredEvents.map((event) => (
                 <div
-                  key={eventName}
+                  key={event.id}
                   className="bg-gray-800 rounded-lg shadow-md p-4 flex items-center justify-between cursor-pointer hover:bg-gray-700"
-                  onClick={() => handleFolderClick(eventName)}
+                  onClick={() => handleFolderClick(event.id)} // Use event.id for fetching customers
                 >
                   <div className="flex items-center">
                     <FaFolder className="text-purple-400 mr-2" />
                     <div>
-                      <p className="font-medium text-gray-200">{eventName}</p>
+                      <p className="font-medium text-gray-200">{event.name}</p>
                       <p className="text-sm text-gray-400">
-                        {groupedUsers[eventName][0].startDate} -{" "}
-                        {groupedUsers[eventName][0].endDate}
-                      </p>
+                        {event.eventStartDate}
+                      </p>{" "}
+                      {/* Display the event start date */}
                     </div>
                   </div>
                 </div>
@@ -205,9 +103,11 @@ const UsersComponent = () => {
               >
                 Back to Events
               </button>
-              <h2 className="text-xl font-bold mb-4 text-gray-200">
-                {selectedEvent}
-              </h2>
+              {events.length > 0 && (
+                <h2 className="text-xl font-bold mb-4 text-gray-200">
+                  {events.find((event) => event.id === selectedEvent)?.name}
+                </h2>
+              )}
               <div className="overflow-x-auto">
                 <table className="font-kanit min-w-full bg-gray-700 rounded-lg shadow-md overflow-hidden">
                   <thead className="bg-purple-800 text-white">
@@ -242,7 +142,7 @@ const UsersComponent = () => {
                           {user.id}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                          {user.name}
+                          {`${user.firstName} ${user.lastName}`}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
                           {user.email}
@@ -254,7 +154,7 @@ const UsersComponent = () => {
                           {user.quantity}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                          {user.amount}
+                          {user.totalAmount}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
                           {user.status}

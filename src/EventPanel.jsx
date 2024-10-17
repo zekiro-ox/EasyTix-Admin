@@ -1,12 +1,20 @@
 import React, { useState, useEffect } from "react";
 import { FaArrowLeft } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
-import { getFirestore, collection, getDocs } from "firebase/firestore"; // Import Firestore functions
+import { useNavigate, useLocation } from "react-router-dom";
+import {
+  getFirestore,
+  collection,
+  getDocs,
+  doc,
+  updateDoc,
+} from "firebase/firestore"; // Import Firestore functions
 import { Html5QrcodeScanner } from "html5-qrcode";
 import Modal from "./Modal"; // Import the Modal component
 
-const EventPanel = ({ event }) => {
+const EventPanel = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const event = location.state?.event; // Access the event from location state
   const [registeredUsers, setRegisteredUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isQrScannerOpen, setIsQrScannerOpen] = useState(false);
@@ -23,10 +31,8 @@ const EventPanel = ({ event }) => {
         const db = getFirestore();
         const customersCollection = collection(
           db,
-          `events/${event.id}/customers`
-        ); // Reference to customers subcollection
-        console.log("Fetching from:", `events/${event.id}/customers`); // Log the path
-
+          `events/${event.id}/customers` // Reference to customers subcollection
+        );
         const customersSnapshot = await getDocs(customersCollection);
 
         if (customersSnapshot.empty) {
@@ -44,11 +50,10 @@ const EventPanel = ({ event }) => {
             phoneNumber: data.phoneNumber,
             ticketType: data.ticketType,
             quantity: data.quantity,
-            status: "Confirmed", // Assuming status is always confirmed for registered users
+            status: data.status || "Pending", // Default status if not set
           };
         });
 
-        console.log("Registered users:", usersList); // Log the users fetched
         setRegisteredUsers(usersList); // Set the registered users in state
       } catch (error) {
         console.error("Error fetching registered users:", error);
@@ -78,19 +83,36 @@ const EventPanel = ({ event }) => {
       });
 
       qrCodeScanner.render(
-        (qrCodeMessage) => {
+        async (qrCodeMessage) => {
           const [name, email, phoneNumber, ticketType, quantity] =
             qrCodeMessage.split(",");
-          const newTicket = {
-            id: scannedTickets.length + 1,
-            name,
-            email,
-            phoneNumber,
-            ticketType,
-            quantity,
-            status: "Confirmed",
-          };
-          setScannedTickets((prevTickets) => [...prevTickets, newTicket]);
+
+          // Find the user in the registered users list
+          const user = registeredUsers.find((user) => user.email === email);
+
+          if (user) {
+            // Update Firestore document for the matched user
+            const userDocRef = doc(
+              getFirestore(),
+              `events/${event.id}/customers`,
+              user.id
+            );
+            await updateDoc(userDocRef, {
+              status: "Registered", // Update status to Registered
+            });
+
+            // Optionally, update local state to reflect the change
+            setRegisteredUsers((prevUsers) =>
+              prevUsers.map((u) =>
+                u.id === user.id ? { ...u, status: "Registered" } : u
+              )
+            );
+
+            console.log(`User  ${name} is now registered.`);
+          } else {
+            console.log("No matching user found for the scanned ticket.");
+          }
+
           qrCodeScanner.clear();
           setIsQrScannerOpen(false);
         },
@@ -105,7 +127,7 @@ const EventPanel = ({ event }) => {
         qrCodeScanner.clear();
       };
     }
-  }, [isQrScannerOpen, scannedTickets]);
+  }, [isQrScannerOpen, scannedTickets, registeredUsers, event]);
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-900 text-white">
@@ -119,23 +141,12 @@ const EventPanel = ({ event }) => {
         </button>
         {event && (
           <h1 className="text-xl md:text-2xl font-bold">
-            {event.name} Details
+            {event.name} Registration
           </h1>
         )}
         <div className="w-10"></div>
       </header>
       <main className="flex flex-col items-center p-4 md:p-8">
-        {event && (
-          <>
-            <h2 className="text-2xl md:text-4xl font-bold mb-4 md:mb-6">
-              {event.name}
-            </h2>
-            <p className="text-base md:text-lg mb-4 md:mb-6">
-              {event.description}
-            </p>
-          </>
-        )}
-
         <div className="w-full max-w-lg mb-4 md:mb-6 flex items-center">
           <div className="relative flex items-center w-full">
             <input
