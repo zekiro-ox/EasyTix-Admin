@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { FaArrowLeft } from "react-icons/fa";
+import { FaArrowLeft, FaSync } from "react-icons/fa"; // Import FaSync for the reload icon
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   getFirestore,
@@ -18,49 +18,50 @@ const EventPanel = () => {
   const [registeredUsers, setRegisteredUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isQrScannerOpen, setIsQrScannerOpen] = useState(false);
-  const [scannedTickets, setScannedTickets] = useState([]);
+  const [scannedTickets, setScannedTickets] = useState(new Set()); // Use Set to track scanned tickets
+
+  const fetchRegisteredUsers = async () => {
+    if (!event) {
+      console.log("No event found.");
+      return; // Ensure the event exists
+    }
+
+    try {
+      const db = getFirestore();
+      const customersCollection = collection(
+        db,
+        `events/${event.id}/customers` // Reference to customers subcollection
+      );
+      const customersSnapshot = await getDocs(customersCollection);
+
+      if (customersSnapshot.empty) {
+        console.log("No registered users found.");
+        return;
+      }
+
+      // Map the customers into an array
+      const usersList = customersSnapshot.docs.map((doc) => {
+        const data = doc.data();
+        return {
+          id: doc.id, // This is the document ID
+          ticketID: data.ticketID, // Add ticketID to user object
+          name: `${data.firstName} ${data.lastName}`, // Combine firstName and lastName
+          email: data.email,
+          phoneNumber: data.phoneNumber,
+          ticketType: data.ticketType,
+          quantity: data.quantity,
+          status: data.status || "Pending", // Default status if not set
+        };
+      });
+
+      setRegisteredUsers(usersList); // Set the registered users in state
+    } catch (error) {
+      console.error("Error fetching registered users:", error);
+    }
+  };
 
   useEffect(() => {
-    const fetchRegisteredUsers = async () => {
-      if (!event) {
-        console.log("No event found.");
-        return; // Ensure the event exists
-      }
-
-      try {
-        const db = getFirestore();
-        const customersCollection = collection(
-          db,
-          `events/${event.id}/customers` // Reference to customers subcollection
-        );
-        const customersSnapshot = await getDocs(customersCollection);
-
-        if (customersSnapshot.empty) {
-          console.log("No registered users found.");
-          return;
-        }
-
-        // Map the customers into an array
-        const usersList = customersSnapshot.docs.map((doc) => {
-          const data = doc.data();
-          return {
-            id: doc.id,
-            name: `${data.firstName} ${data.lastName}`, // Combine firstName and lastName
-            email: data.email,
-            phoneNumber: data.phoneNumber,
-            ticketType: data.ticketType,
-            quantity: data.quantity,
-            status: data.status || "Pending", // Default status if not set
-          };
-        });
-
-        setRegisteredUsers(usersList); // Set the registered users in state
-      } catch (error) {
-        console.error("Error fetching registered users:", error);
-      }
-    };
-
-    fetchRegisteredUsers();
+    fetchRegisteredUsers(); // Fetch users on component mount
   }, [event]);
 
   const handleSearchChange = (e) => {
@@ -75,6 +76,10 @@ const EventPanel = () => {
     setIsQrScannerOpen(true);
   };
 
+  const handleReload = () => {
+    fetchRegisteredUsers(); // Call the fetch function to reload users
+  };
+
   useEffect(() => {
     if (isQrScannerOpen) {
       const qrCodeScanner = new Html5QrcodeScanner("qr-reader", {
@@ -85,19 +90,25 @@ const EventPanel = () => {
       qrCodeScanner.render(
         async (qrCodeMessage) => {
           try {
-            // Parse the JSON string
+            // Parse the JSON string from QR code
             const ticketData = JSON.parse(qrCodeMessage);
-            const {
-              firstName,
-              lastName,
-              email,
-              phoneNumber,
-              ticketType,
-              quantity,
-            } = ticketData;
+            const { ticketID, firstName, lastName } = ticketData;
 
-            // Find the user in the registered users list
-            const user = registeredUsers.find((user) => user.email === email);
+            console.log("Scanned Ticket Data:", ticketData); // Log scanned ticket data
+            console.log("Registered Users:", registeredUsers); // Log registered users
+
+            // Check if the ticket has already been scanned
+            if (scannedTickets.has(ticketID)) {
+              alert("This ticket has already been scanned.");
+              qrCodeScanner.clear();
+              setIsQrScannerOpen(false);
+              return; // Exit if already scanned
+            }
+
+            // Find the user in the registered users list using document ID
+            const user = registeredUsers.find(
+              (user) => user.id === ticketID // Match with document ID
+            );
 
             if (user) {
               // Update Firestore document for the matched user
@@ -110,15 +121,20 @@ const EventPanel = () => {
                 status: "Registered", // Update status to Registered
               });
 
-              // Optionally, update local state to reflect the change
+              // Update local state to reflect the change
               setRegisteredUsers((prevUsers) =>
                 prevUsers.map((u) =>
                   u.id === user.id ? { ...u, status: "Registered" } : u
                 )
               );
 
+              // Add the ticketID to the scanned tickets set
+              setScannedTickets((prev) => new Set(prev).add(ticketID));
+
+              alert(`User ${firstName} ${lastName} is now registered.`);
               console.log(`User  ${firstName} ${lastName} is now registered.`);
             } else {
+              alert("No matching user found for the scanned ticket.");
               console.log("No matching user found for the scanned ticket.");
             }
           } catch (error) {
@@ -152,11 +168,18 @@ const EventPanel = () => {
           Back
         </button>
         {event && (
-          <h1 className="text-xl md:text-2xl font-bold">
+          <h1 className="text-xl md :text-2xl font-bold">
             {event.name} Registration
           </h1>
         )}
         <div className="w-10"></div>
+        <button
+          className="flex items-center text-white text-lg font-semibold mr-4 md:mr-8 hover:font-bold"
+          onClick={handleReload}
+        >
+          <FaSync className="mr-2" />
+          Reload
+        </button>
       </header>
       <main className="flex flex-col items-center p-4 md:p-8">
         <div className="w-full max-w-lg mb-4 md:mb-6 flex items-center">
@@ -191,7 +214,7 @@ const EventPanel = () => {
               </tr>
             </thead>
             <tbody>
-              {[...filteredUsers, ...scannedTickets].map((user, index) => (
+              {filteredUsers.map((user, index) => (
                 <tr key={index} className="text-gray-300">
                   <td className="px-4 md:px-6 py-3">{user.id}</td>
                   <td className="px-4 md:px-6 py-3">{user.name}</td>
