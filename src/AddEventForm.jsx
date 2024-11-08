@@ -17,7 +17,7 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
     eventStartDate: "", // Added the status field with a default value
     eventPosterURL: "",
     seatMapURL: "",
-    tickets: [{ type: "", price: "", quantity: "" }],
+    tickets: [{ type: "", price: "", quantity: "", column: "" }],
   });
 
   const [formVisible, setFormVisible] = useState(true); // State to manage form visibility
@@ -127,7 +127,7 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
       eventStartDate: "", // Reset status to default value
       eventPosterURL: "",
       seatMapURL: "",
-      tickets: [{ type: "", price: "", quantity: "" }],
+      tickets: [{ type: "", price: "", quantity: "", column: "" }],
     });
   };
 
@@ -344,7 +344,7 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
         <div className="col-span-2">
           <h3 className="text-md font-medium text-gray-300 mb-2">Tickets</h3>
           {newEvent.tickets.map((ticket, index) => (
-            <div key={index} className="grid grid-cols-3 gap-2 mb-2">
+            <div key={index} className="grid grid-cols-5 gap-2 mb-2">
               <input
                 type="text"
                 name="type"
@@ -366,6 +366,14 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
                 name="quantity"
                 placeholder="Quantity"
                 value={ticket.quantity}
+                onChange={(e) => handleTicketChange(index, e)}
+                className="px-3 py-2 rounded-md border border-gray-600 shadow-sm focus:outline-none focus:ring focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-700 text-white"
+              />
+              <input
+                type="text"
+                name="column"
+                placeholder="Column"
+                value={ticket.column}
                 onChange={(e) => handleTicketChange(index, e)}
                 className="px-3 py-2 rounded-md border border-gray-600 shadow-sm focus:outline-none focus:ring focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-700 text-white"
               />
