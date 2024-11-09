@@ -1,96 +1,90 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  doc,
+  setDoc,
+} from "firebase/firestore"; // Import `doc` and `setDoc`
+import { getAuth } from "firebase/auth";
 
 const ChatComponent = ({ message, onClose, messages, setMessages }) => {
-  const [replyMessage, setReplyMessage] = useState("");
-  const [messageHistory, setMessageHistory] = useState([]);
+  const [reply, setReply] = useState("");
 
-  useEffect(() => {
-    // Initialize message history with replies from the selected message
-    setMessageHistory(message.replies);
-  }, [message]);
+  const handleReplySubmit = async (e) => {
+    e.preventDefault();
+    const auth = getAuth();
+    const user = auth.currentUser;
 
-  const handleReply = () => {
-    // Here you would handle sending the reply message
-    console.log("Replying to message:", message, "Message:", replyMessage);
-
-    // Simulate real-time update by updating local state after a delay
-    setTimeout(() => {
-      const newReply = {
-        id: messageHistory.length + 1, // Replace with actual ID generation logic
-        sender: "You",
-        message: replyMessage,
-        timestamp: new Date().toISOString(),
-      };
-
-      // Update local message history
-      setMessageHistory((prevHistory) => [...prevHistory, newReply]);
-
-      // Update the message with the new reply
-      const updatedMessages = messages.map((msg) =>
-        msg.id === message.id
-          ? {
-              ...msg,
-              read: true,
-              replies: [...msg.replies, newReply],
-            }
-          : msg
+    if (user) {
+      const db = getFirestore();
+      const messagesRef = collection(
+        db,
+        "conversations",
+        message.id,
+        "messages"
       );
-      setMessages(updatedMessages);
-      setReplyMessage(""); // Clear reply message
-    }, 1000); // Simulate a delay for realistic effect
+
+      // Add the reply message to the messages subcollection
+      await addDoc(messagesRef, {
+        message: reply,
+        senderId: user.uid,
+        timestamp: new Date().toISOString(),
+      });
+
+      // Update the last message in the conversation
+      await updateLastMessage(message.id, reply, user.uid);
+
+      setReply("");
+      onClose(); // Close chat after sending reply
+    }
+  };
+
+  const updateLastMessage = async (conversationId, replyMessage, senderId) => {
+    const db = getFirestore();
+    const conversationRef = doc(db, "conversations", conversationId);
+
+    await setDoc(
+      conversationRef,
+      {
+        lastMessage: {
+          message: replyMessage,
+          senderId,
+          timestamp: new Date().toISOString(),
+        },
+        lastUpdatedAt: new Date().toISOString(),
+      },
+      { merge: true }
+    );
   };
 
   return (
-    <div className="font-kanit bg-gray-900 text-gray-100 rounded-lg shadow-md p-6 w-full lg:w-3/4 mx-auto mt-16">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-semibold">{message.subject}</h2>
+    <div className="bg-gray-800 rounded-lg shadow-md p-6">
+      <h2 className="text-xl font-semibold mb-4">
+        Chat with {message.initiatedBy}
+      </h2>
+      <div className="overflow-y-auto h-64 mb-4">
+        {/* Display messages here */}
+        {/* You can fetch and display messages from the messages subcollection */}
       </div>
-      <div className="mb-4">
-        <div className="font-semibold">{message.sender}</div>
-        <div className="text-gray-400 text-sm">
-          {new Date(message.timestamp).toLocaleString()}
-        </div>
-      </div>
-      <div className="text-gray-300 mb-6">{message.message}</div>
-
-      {/* Message history */}
-      <h3 className="text-lg font-semibold mb-2">Message History</h3>
-      <div className="space-y-4">
-        {messageHistory.map((reply) => (
-          <div key={reply.id} className="flex flex-col">
-            <div className="flex items-center">
-              <div className="font-semibold">{reply.sender}</div>
-              <div className="text-gray-400 text-sm ml-auto">
-                {new Date(reply.timestamp).toLocaleString()}
-              </div>
-            </div>
-            <div className="text-gray-300">{reply.message}</div>
-          </div>
-        ))}
-      </div>
-
-      {/* Reply textarea */}
-      <textarea
-        className="w-full mt-4 px-3 py-2 border border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-indigo-300 focus:border-indigo-300 bg-gray-800 text-gray-100"
-        rows="4"
-        placeholder="Reply to this message..."
-        value={replyMessage}
-        onChange={(e) => setReplyMessage(e.target.value)}
-      />
-      <div className="mt-4 flex justify-end">
+      <form onSubmit={handleReplySubmit} className="flex">
+        <textarea
+          className="flex-1 p-2 border border-gray-300 rounded-md bg-neutral-700 text-white"
+          value={reply}
+          onChange={(e) => setReply(e.target.value)}
+          placeholder="Type your reply..."
+          required
+        />
         <button
-          onClick={handleReply}
-          className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring focus:ring-indigo-200 mr-2"
+          type="submit"
+          className="ml-2 text-white px-4 py-2 rounded-md font-bold bg-violet-500 hover:bg-violet-600"
         >
-          Send Reply
+          Send
         </button>
-        <button
-          onClick={onClose}
-          className="px-4 py-2 bg-gray-400 text-white rounded-md hover:bg-gray-500 focus:outline-none focus:ring focus:ring-gray-300"
-        >
-          Close
-        </button>
-      </div>
+      </form>
+      <button onClick={onClose} className="mt-4 text-gray-400 hover:underline">
+        Close Chat
+      </button>
     </div>
   );
 };

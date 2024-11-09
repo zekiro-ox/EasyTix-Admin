@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { auth, db } from "./config/firebaseConfig"; // Adjust the path as per your project structure
+import { signInWithEmailAndPassword } from "firebase/auth";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import Logo from "./assets/CompanyLogo.png"; // Adjust the path as per your project structure
 
@@ -12,6 +13,9 @@ const AdminLogin = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
+  const [failedAttempts, setFailedAttempts] = useState(0);
+  const [isLockedOut, setIsLockedOut] = useState(false);
+  const [lockoutTime, setLockoutTime] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -21,6 +25,25 @@ const AdminLogin = () => {
       setRememberMe(true);
     }
   }, []);
+
+  useEffect(() => {
+    if (isLockedOut) {
+      const timerDuration = 10 * 60; // 10 minutes in seconds
+      setLockoutTime(timerDuration);
+      const timer = setInterval(() => {
+        setLockoutTime((prevTime) => {
+          if (prevTime <= 1) {
+            clearInterval(timer);
+            setIsLockedOut(false);
+            setFailedAttempts(0);
+            return 0;
+          }
+          return prevTime - 1;
+        });
+      }, 1000); // Update every second
+      return () => clearInterval(timer);
+    }
+  }, [isLockedOut]);
 
   const togglePasswordVisibility = () => {
     setPasswordVisible(!passwordVisible);
@@ -32,35 +55,59 @@ const AdminLogin = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isLockedOut) {
+      setError("Too many failed attempts. Please wait 10 minutes.");
+      return;
+    }
+
     setIsLoading(true);
     setError(""); // Clear any previous errors
 
     try {
-      const q = query(
-        collection(db, "admins"),
-        where("email", "==", email),
-        where("password", "==", password)
-      );
-      const querySnapshot = await getDocs(q);
+      // First, sign in with Firebase Authentication
+      await signInWithEmailAndPassword(auth, email, password);
 
-      if (!querySnapshot.empty) {
-        setIsLoggedIn(true);
-        if (rememberMe) {
-          localStorage.setItem("rememberedEmail", email);
+      // After successful login, get the authenticated user's UID
+      const user = auth.currentUser;
+      if (user) {
+        const uid = user.uid;
+
+        // Now check if the UID exists in the Firestore "admins" collection
+        const adminsRef = collection(db, "admins");
+        const q = query(adminsRef, where("__name__", "==", uid)); // Match Firestore document ID with UID
+        const querySnapshot = await getDocs(q);
+
+        if (!querySnapshot.empty) {
+          // UID matches a document in the "admins" collection, allow login
+          setIsLoggedIn(true);
+          if (rememberMe) {
+            localStorage.setItem("rememberedEmail", email);
+          } else {
+            localStorage.removeItem("rememberedEmail");
+          }
+          navigate("/dashboard");
         } else {
-          localStorage.removeItem("rememberedEmail");
+          setError("You are not authorized to access this admin panel.");
         }
-        navigate("/dashboard");
-      } else {
-        setError("Invalid email or password.");
       }
     } catch (error) {
-      setError("Error logging in.");
-      console.error("Error logging in:", error);
+      setFailedAttempts((prev) => {
+        const attempts = prev + 1;
+        if (attempts >= 3) {
+          setIsLockedOut(true);
+          setError("Too many failed attempts. Please wait 10 minutes.");
+        } else {
+          setError("Invalid email or password.");
+        }
+        return attempts;
+      });
     } finally {
       setIsLoading(false);
     }
   };
+
+  const minutesLeft = Math.floor(lockoutTime / 60);
+  const secondsLeft = lockoutTime % 60;
 
   return (
     <div className="font-kanit min-h-screen flex flex-col items-center justify-center bg-gray-900">
@@ -164,10 +211,20 @@ const AdminLogin = () => {
               </label>
             </div>
           </div>
+          <div className="text-sm text-gray- 300 mb-4">
+            {isLockedOut ? (
+              <span>
+                Locked out! Please wait {minutesLeft}m {secondsLeft}s before
+                trying again.
+              </span>
+            ) : (
+              <span>Failed attempts: {failedAttempts}/3</span>
+            )}
+          </div>
           <button
             type="submit"
             className="w-full py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
-            disabled={isLoading}
+            disabled={isLoading || isLockedOut}
           >
             {isLoading ? (
               <div className="flex items-center justify-center">
@@ -193,6 +250,8 @@ const AdminLogin = () => {
                 </svg>
                 <span>Loading...</span>
               </div>
+            ) : isLockedOut ? (
+              <span>Locked out for 10 minutes</span>
             ) : (
               "Sign In"
             )}
@@ -210,5 +269,4 @@ const AdminLogin = () => {
     </div>
   );
 };
-
 export default AdminLogin;

@@ -9,10 +9,13 @@ const OrganizerLogin = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false); // State for loading animation
-  const [showIncorrectPassword, setShowIncorrectPassword] = useState(false); // State for showing incorrect password message
-  const [rememberMe, setRememberMe] = useState(false); // State for remember me checkbox
-  const [accounts, setAccounts] = useState([]); // State for storing accounts data
+  const [isLoading, setIsLoading] = useState(false);
+  const [showIncorrectPassword, setShowIncorrectPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
+  const [accounts, setAccounts] = useState([]);
+  const [failedAttempts, setFailedAttempts] = useState(0);
+  const [isLockedOut, setIsLockedOut] = useState(false);
+  const [lockoutTime, setLockoutTime] = useState(0);
   const navigate = useNavigate(); // Initialize useNavigate hook
 
   useEffect(() => {
@@ -39,15 +42,38 @@ const OrganizerLogin = () => {
     fetchAccounts();
   }, []);
 
+  useEffect(() => {
+    if (isLockedOut) {
+      const timerDuration = 10 * 60; // 10 minutes in seconds
+      setLockoutTime(timerDuration);
+      const timer = setInterval(() => {
+        setLockoutTime((prevTime) => {
+          if (prevTime <= 1) {
+            clearInterval(timer);
+            setIsLockedOut(false);
+            setFailedAttempts(0);
+            return 0;
+          }
+          return prevTime - 1;
+        });
+      }, 1000); // Update every second
+      return () => clearInterval(timer);
+    }
+  }, [isLockedOut]);
+
   const togglePasswordVisibility = () => {
     setPasswordVisible(!passwordVisible);
   };
-
   const handleSubmit = (e) => {
     e.preventDefault();
-    setIsLoading(true); // Start loading animation
+    if (isLockedOut) {
+      setShowIncorrectPassword(true);
+      return;
+    }
 
-    // Authenticate user
+    setIsLoading(true);
+    setShowIncorrectPassword(false);
+
     const authenticated = accounts.some(
       (account) => account.email === email && account.password === password
     );
@@ -55,9 +81,8 @@ const OrganizerLogin = () => {
     setTimeout(() => {
       if (authenticated) {
         setIsLoggedIn(true);
-        navigate("/organizer-dashboard"); // Navigate to organizer dashboard on successful login
+        navigate("/organizer-dashboard");
 
-        // Remember me functionality
         if (rememberMe) {
           localStorage.setItem("organizerEmail", email);
           localStorage.setItem("organizerPassword", password);
@@ -66,11 +91,23 @@ const OrganizerLogin = () => {
           localStorage.removeItem("organizerPassword");
         }
       } else {
-        setShowIncorrectPassword(true); // Show incorrect password message
+        setFailedAttempts((prev) => {
+          const attempts = prev + 1;
+          if (attempts >= 3) {
+            setIsLockedOut(true);
+            setShowIncorrectPassword(false);
+          } else {
+            setShowIncorrectPassword(true);
+          }
+          return attempts;
+        });
       }
-      setIsLoading(false); // Stop loading animation after a short delay
+      setIsLoading(false);
     }, 3000); // Simulate a delay for demo purposes
   };
+
+  const minutesLeft = Math.floor(lockoutTime / 60);
+  const secondsLeft = lockoutTime % 60;
 
   const handleRememberMeChange = () => {
     setRememberMe(!rememberMe);
@@ -183,10 +220,20 @@ const OrganizerLogin = () => {
               </label>
             </div>
           </div>
+          <div className="text-sm text-gray-300 mb-4">
+            {isLockedOut ? (
+              <span>
+                Locked out! Please wait {minutesLeft}m {secondsLeft}s before
+                trying again.
+              </span>
+            ) : (
+              <span>Failed attempts: {failedAttempts}/3</span>
+            )}
+          </div>
           <button
             type="submit"
             className="w-full py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
-            disabled={isLoading} // Disable button while loading
+            disabled={isLoading || isLockedOut}
           >
             {isLoading ? (
               <div className="flex items-center justify-center">
@@ -212,6 +259,8 @@ const OrganizerLogin = () => {
                 </svg>
                 <span>Loading...</span>
               </div>
+            ) : isLockedOut ? (
+              <span>Locked out for 10 minutes</span>
             ) : (
               "Sign In"
             )}
