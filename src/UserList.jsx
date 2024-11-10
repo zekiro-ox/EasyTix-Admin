@@ -1,15 +1,16 @@
 import React, { useState } from "react";
 
-const UserList = ({ data }) => {
+const UserList = ({ data = [] }) => {
   const [searchTerm, setSearchTerm] = useState("");
 
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
   };
 
-  // Filter users based on search term
-  const filteredUsers = data.filter((user) =>
-    user.name.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredUsers = data.filter(
+    (user) =>
+      user.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.lastName.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -39,14 +40,12 @@ const UserList = ({ data }) => {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-700">
-            {filteredUsers.map((user) => (
-              <tr key={user.id}>
+            {filteredUsers.map((user, index) => (
+              <tr key={`${user.uid}-${index}`}>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                  {user.id}
+                  {user.uid}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                  {user.name}
-                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{`${user.firstName} ${user.lastName}`}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
                   {user.email}
                 </td>

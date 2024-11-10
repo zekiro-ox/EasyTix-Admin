@@ -115,7 +115,7 @@ const MessageComponent = () => {
   };
 
   useEffect(() => {
-    fetchAdminId;
+    fetchAdminId();
   }, []);
   return (
     <div className="font-kanit flex flex-col lg:flex-row min-h-screen bg-gray-900 text-gray-100">

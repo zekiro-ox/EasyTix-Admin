@@ -1,31 +1,94 @@
 import React, { useState, useEffect } from "react";
 import Sidebar from "./Sidebar";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "./config/firebaseConfig";
 
-const AdminDashboard = ({ salesData }) => {
-  // Calculate total tickets sold, total revenue, and average tickets per day
-  const totalTicketsSold = salesData.reduce(
-    (acc, item) => acc + item.ticketsSold,
-    0
-  );
-  const totalRevenue = salesData.reduce((acc, item) => acc + item.revenue, 0);
-  const averageTicketsPerDay =
-    salesData.length > 0 ? totalTicketsSold / salesData.length : 0;
+const AdminDashboard = () => {
+  const [salesData, setSalesData] = useState([]);
+  const [totalTicketsSold, setTotalTicketsSold] = useState(0);
+  const [totalRevenue, setTotalRevenue] = useState(0);
+  const [averageTicketsPerDay, setAverageTicketsPerDay] = useState(0);
+  const [feedbacks, setFeedbacks] = useState([]); // State to hold feedback data
 
-  // Example customer feedback (replace with actual feedback data)
-  const feedbacks = [
-    {
-      id: 1,
-      text: '"Awesome event, great experience!" - John Doe',
-    },
-    {
-      id: 2,
-      text: '"Smooth ticket booking process, loved it." - Jane Smith',
-    },
-    {
-      id: 3,
-      text: '"The event exceeded my expectations!" - Alice Johnson',
-    },
-  ];
+  useEffect(() => {
+    const fetchSalesData = async () => {
+      const salesDataArray = [];
+      const eventsRef = collection(db, "events");
+      const eventsSnapshot = await getDocs(eventsRef);
+
+      for (const eventDoc of eventsSnapshot.docs) {
+        const customersRef = collection(eventDoc.ref, "customers");
+        const customersSnapshot = await getDocs(customersRef);
+
+        let totalTickets = 0;
+        let totalRevenueForEvent = 0;
+
+        customersSnapshot.forEach((customerDoc) => {
+          const data = customerDoc.data();
+          const quantity = data.quantity || 0;
+          const ticketPrice = data.totalAmount || 0;
+
+          totalTickets += quantity;
+          totalRevenueForEvent += ticketPrice;
+        });
+
+        salesDataArray.push({
+          eventId: eventDoc.id,
+          ticketsSold: totalTickets,
+          revenue: totalRevenueForEvent,
+        });
+      }
+
+      setSalesData(salesDataArray);
+    };
+
+    fetchSalesData();
+  }, []);
+
+  useEffect(() => {
+    // Calculate total tickets sold, total revenue, and average tickets per day
+    const totalTickets = salesData.reduce(
+      (acc, item) => acc + item.ticketsSold,
+      0
+    );
+    const totalRev = salesData.reduce((acc, item) => acc + item.revenue, 0);
+    const averageTickets =
+      salesData.length > 0 ? totalTickets / salesData.length : 0;
+
+    setTotalTicketsSold(totalTickets);
+    setTotalRevenue(totalRev);
+    setAverageTicketsPerDay(averageTickets);
+  }, [salesData]);
+
+  useEffect(() => {
+    const fetchFeedbacks = async () => {
+      const feedbackArray = [];
+      const usersRef = collection(db, "users");
+      const usersSnapshot = await getDocs(usersRef);
+
+      for (const userDoc of usersSnapshot.docs) {
+        const feedbackRef = collection(userDoc.ref, "feedback");
+        const feedbackSnapshot = await getDocs(feedbackRef);
+
+        feedbackSnapshot.forEach((feedbackDoc) => {
+          const feedbackData = feedbackDoc.data();
+          const createdAt = feedbackData.createdAt.toDate().toLocaleString(); // Convert Firestore timestamp to readable format
+          const feedbackText = feedbackData.feedback; // Assuming the feedback field is named 'feedback'
+
+          feedbackArray.push({
+            id: feedbackDoc.id,
+            username: userDoc.data().username, // Fetch username from user document
+            feedback: feedbackText,
+            createdAt: createdAt,
+          });
+        });
+      }
+
+      setFeedbacks(feedbackArray);
+    };
+
+    fetchFeedbacks();
+  }, []);
 
   return (
     <div className="flex flex-col lg:flex-row min-h-screen bg-gray-800 text-white">
@@ -59,7 +122,7 @@ const AdminDashboard = ({ salesData }) => {
                 <h4 className="text-lg font-semibold text-purple-400">
                   Revenue
                 </h4>
-                <p className="text-gray-300">${totalRevenue.toFixed(2)}</p>
+                <p className="text-gray-300">₱ {totalRevenue.toFixed(2)}</p>
               </div>
               <div className="bg-gray-700 p-4 rounded-lg">
                 <h4 className="text-lg font-semibold text-purple-400">
@@ -81,9 +144,10 @@ const AdminDashboard = ({ salesData }) => {
               {feedbacks.map((feedback) => (
                 <div key={feedback.id} className="bg-gray-700 p-4 rounded-lg">
                   <h4 className="text-lg font-semibold text-purple-400">
-                    Feedback {feedback.id}
+                    {feedback.username}
                   </h4>
-                  <p className="text-gray-300">{feedback.text}</p>
+                  <p className="text-gray-300">{feedback.feedback}</p>
+                  <p className="text-gray-500 text-sm">{feedback.createdAt}</p>
                 </div>
               ))}
             </div>

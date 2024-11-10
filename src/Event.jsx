@@ -138,7 +138,8 @@ const EventComponent = () => {
   const confirmArchive = async () => {
     try {
       const eventDocRef = doc(db, "events", eventToArchive.id);
-      await deleteDoc(eventDocRef);
+      // Update the eventStatus to "archived" instead of deleting
+      await updateDoc(eventDocRef, { eventStatus: "archived" });
       const updatedEvents = events.filter(
         (event) => event.id !== eventToArchive.id
       );
@@ -149,16 +150,16 @@ const EventComponent = () => {
       console.error("Error archiving event: ", error);
     }
   };
-
   const cancelArchive = () => {
     setShowConfirmation(false);
     setEventToArchive(null);
   };
 
-  const filteredEvents = events.filter((event) =>
-    event.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
+  const filteredEvents = events
+    .filter((event) =>
+      event.name.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    .filter((event) => event.eventStatus !== "archived");
   return (
     <div className="flex flex-col lg:flex-row min-h-screen bg-gray-900 text-white">
       <Sidebar />

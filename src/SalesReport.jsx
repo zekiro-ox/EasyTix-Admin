@@ -1,257 +1,193 @@
 import React, { useState, useEffect } from "react";
-import { Line } from "react-chartjs-2";
+import { Pie } from "react-chartjs-2";
 import "chart.js/auto";
-import {
-  subDays,
-  format,
-  startOfWeek,
-  endOfWeek,
-  startOfMonth,
-  endOfMonth,
-  addMonths,
-} from "date-fns";
-import * as XLSX from "xlsx";
-import { saveAs } from "file-saver";
-import Sidebar from "./Sidebar"; // Import Sidebar component
-import Logo from "./assets/CompanyLogo.png"; // Update path as necessary
+import { collection, getDocs } from "firebase/firestore";
+import Sidebar from "./Sidebar";
+import { db } from "./config/firebaseConfig";
 
-const SalesReport = ({ salesData }) => {
-  const [filter, setFilter] = useState("weekly");
-  const [currentMonth, setCurrentMonth] = useState(0); // 0 means the current month
-  const [filteredSalesData, setFilteredSalesData] = useState([]);
-
-  useEffect(() => {
-    const today = new Date();
-    const startOfCurrentWeek = startOfWeek(today);
-    const endOfCurrentWeek = endOfWeek(today);
-
-    const filteredData = salesData.filter((item) => {
-      const itemDate = new Date(item.date);
-
-      if (filter === "weekly") {
-        const startDate = subDays(startOfCurrentWeek, currentMonth * 7);
-        const endDate = subDays(endOfCurrentWeek, currentMonth * 7);
-        return itemDate >= startDate && itemDate <= endDate;
-      } else if (filter === "monthly") {
-        const startOfSelectedMonth = startOfMonth(
-          addMonths(today, currentMonth)
-        );
-        const endOfSelectedMonth = endOfMonth(addMonths(today, currentMonth));
-        return (
-          itemDate >= startOfSelectedMonth && itemDate <= endOfSelectedMonth
-        );
-      }
-      return true;
-    });
-    setFilteredSalesData(filteredData);
-  }, [filter, salesData, currentMonth]);
-
-  useEffect(() => {
-    // Initialize currentMonth to 0 when filter is set to "monthly"
-    if (filter === "monthly") {
-      setCurrentMonth(0);
-    }
-  }, [filter]);
-
-  const totalTicketsSold = filteredSalesData.reduce(
-    (acc, item) => acc + item.ticketsSold,
-    0
-  );
-  const totalRevenue = filteredSalesData.reduce(
-    (acc, item) => acc + item.revenue,
-    0
-  );
-  const averageTicketsSoldPerDay =
-    filteredSalesData.length > 0
-      ? totalTicketsSold / filteredSalesData.length
-      : 0; // Avoid division by zero
-
-  const chartData = {
-    labels: filteredSalesData.map((item) =>
-      format(new Date(item.date), "yyyy-MM-dd")
-    ),
+const SalesReport = () => {
+  const [filteredSalesData, setFilteredSalesData] = useState({});
+  const [chartData, setChartData] = useState({
+    labels: [],
     datasets: [
       {
-        label: "Tickets Sold",
-        data: filteredSalesData.map((item) => item.ticketsSold),
-        borderColor: "#EF4444", // Red color for Tickets Sold
-        fill: false,
-      },
-      {
-        label: "Revenue",
-        data: filteredSalesData.map((item) => item.revenue),
-        borderColor: "#3B82F6", // Blue color for Revenue
-        fill: false,
+        label: "Tickets Sold by Type",
+        data: [],
+        backgroundColor: [
+          "#FF6384",
+          "#36A2EB",
+          "#FFCE56",
+          "#4BC0C0",
+          "#9966FF",
+          "#FF9F40",
+        ],
       },
     ],
-  };
+  });
 
-  const chartOptions = {
-    responsive: true,
-    scales: {
-      x: {
-        title: {
-          display: true,
-          text: "Date",
-          color: "#D1D5DB", // Light gray for text color in dark mode
-          font: {
-            size: 16,
-            weight: "bold",
-            family: "'Roboto', sans-serif",
-          },
-        },
-        ticks: {
-          color: "#D1D5DB", // Light gray for ticks in dark mode
-          font: {
-            size: 14,
-            family: "'Roboto', sans-serif",
-          },
-        },
-      },
-      y: {
-        title: {
-          display: true,
-          text: "Amount",
-          color: "#D1D5DB", // Light gray for text color in dark mode
-          font: {
-            size: 16,
-            weight: "bold",
-            family: "'Roboto', sans-serif",
-          },
-        },
-        ticks: {
-          color: "#D1D5DB", // Light gray for ticks in dark mode
-          font: {
-            size: 14,
-            family: "'Roboto', sans-serif",
-          },
-          beginAtZero: true,
-        },
-      },
-    },
-  };
+  const [events, setEvents] = useState([]);
+  const [selectedEvent, setSelectedEvent] = useState("");
+  const [totalTicketsSold, setTotalTicketsSold] = useState(0);
+  const [totalRevenue, setTotalRevenue] = useState(0);
+  const [averageTicketsSoldPerDay, setAverageTicketsSoldPerDay] = useState(0);
 
-  const handlePeriodChange = (direction) => {
-    if (filter === "weekly" || filter === "monthly") {
-      setCurrentMonth((prevMonth) => prevMonth + direction);
+  useEffect(() => {
+    const fetchEvents = async () => {
+      const eventsRef = collection(db, "events");
+      const eventsSnapshot = await getDocs(eventsRef);
+      const eventsList = eventsSnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setEvents(eventsList);
+      if (eventsList.length > 0) {
+        setSelectedEvent(eventsList[0].id);
+      }
+    };
+    fetchEvents();
+  }, []);
+
+  useEffect(() => {
+    const fetchSalesData = async () => {
+      const salesData = {};
+      let totalTicketsSold = 0;
+      let totalRevenue = 0;
+      const eventsRef = collection(db, "events");
+      const eventsSnapshot = await getDocs(eventsRef);
+
+      for (const eventDoc of eventsSnapshot.docs) {
+        if (selectedEvent && eventDoc.id !== selectedEvent) {
+          continue;
+        }
+
+        const customersRef = collection(eventDoc.ref, "customers");
+        const customersSnapshot = await getDocs(customersRef);
+
+        customersSnapshot.forEach((customerDoc) => {
+          const data = customerDoc.data();
+          const ticketType = data.ticketType;
+          const quantity = data.quantity;
+          const ticketPrice = data.totalAmount || 0;
+
+          if (!salesData[ticketType]) {
+            salesData[ticketType] = 0;
+          }
+          salesData[ticketType] += quantity;
+          totalTicketsSold += quantity;
+          totalRevenue += ticketPrice;
+        });
+      }
+
+      setFilteredSalesData(salesData);
+      setTotalTicketsSold(totalTicketsSold);
+      setTotalRevenue(totalRevenue);
+    };
+    fetchSalesData();
+  }, [selectedEvent]);
+
+  useEffect(() => {
+    const labels = Object.keys(filteredSalesData);
+    const data = Object.values(filteredSalesData);
+
+    if (labels.length > 0) {
+      setChartData({
+        labels,
+        datasets: [
+          {
+            label: "Tickets Sold by Type",
+            data,
+            backgroundColor: [
+              "#FF6384",
+              "#36A2EB",
+              "#FFCE56",
+              "#4BC0C0",
+              "#9966FF",
+              "#FF9F40",
+            ],
+          },
+        ],
+      });
+
+      const daysCount = new Set(labels).size;
+      setAverageTicketsSoldPerDay(totalTicketsSold / daysCount);
     }
-  };
-
-  const downloadSalesReport = () => {
-    const worksheet = XLSX.utils.json_to_sheet(filteredSalesData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Sales Report");
-    XLSX.writeFile(workbook, "sales_report.xlsx");
-  };
+  }, [filteredSalesData, totalTicketsSold]);
 
   return (
     <div className="font-kanit flex flex-col lg:flex-row min-h-screen bg-gray-900 text-white">
       <Sidebar />
-      <div className="flex-1 flex flex-col pt-16 pr-5 pl-5 pb-5 lg:ml-64">
-        <div className="bg-purple-800 p-6 rounded-t-2xl">
-          <div className="bg-gray-900 p-8 rounded-2xl shadow-2xl w-full lg:w-96">
-            <h2 className="text-3xl mb-4 text-center font-bold text-purple-600">
+      <div className="flex-1 flex flex-col p-5 lg:ml-64">
+        <div className="bg-purple-800 p-6 rounded-t-2xl mb-6">
+          <div className="bg-gray-900 p-8 rounded-2xl shadow-2xl mx-auto w-full lg:w-3/5 text-center">
+            <h2 className="text-3xl mb-4 font-bold text-purple-600">
               Sales Report
             </h2>
-            <p className="text-gray-300 text-center">
-              Overview of tickets sold and revenue.
-            </p>
+            <p className="text-gray-300">Overview of tickets sold by type.</p>
           </div>
         </div>
 
-        <div className="bg-gray-800 p-6 rounded-2xl shadow-2xl mt-6">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-2xl font-bold text-purple-400">
-              Tickets Sold and Revenue Over Time
+        <div className="flex flex-col lg:flex-row space-y-6 lg:space-y-0 lg:space-x-6 mt-6">
+          <div className="w-full lg:w-1/3 bg-gray-700 p-6 rounded-2xl shadow-2xl">
+            <h3 className="text-2xl mb-4 text-center font-bold text-purple-400">
+              Sales Summary
             </h3>
-            <div className="flex flex-col lg:flex-row items-center space-y-2 lg:space-y-0 lg:space-x-4">
-              <select
-                value={filter}
-                onChange={(e) => {
-                  setFilter(e.target.value);
-                  setCurrentMonth(0); // Reset currentMonth when changing filters
-                }}
-                className="p-2 border border-gray-600 rounded bg-gray-700"
-              >
-                <option value="weekly">Weekly</option>
-                <option value="monthly">Monthly</option>
-              </select>
-              {filter === "weekly" && (
-                <div className="flex items-center space-x-2">
-                  <button
-                    onClick={() => handlePeriodChange(-1)}
-                    disabled={currentMonth === 0} // Disable if it's the current week
-                    className="p-2 border border-gray-600 rounded bg-gray-600 hover:bg-gray-700"
-                  >
-                    Next
-                  </button>
-                  <button
-                    onClick={() => handlePeriodChange(1)}
-                    className="p-2 border border-gray-600 rounded bg-gray-600 hover:bg-gray-700"
-                  >
-                    Previous
-                  </button>
-                </div>
-              )}
-              {filter === "monthly" && (
-                <div className="flex items-center space-x-2">
-                  <button
-                    onClick={() => handlePeriodChange(1)}
-                    disabled={currentMonth === 0} // Disable if it's the current month
-                    className="p-2 border border-gray-600 rounded bg-gray-600 hover:bg-gray-700"
-                  >
-                    Next
-                  </button>
-                  <button
-                    onClick={() => handlePeriodChange(-1)}
-                    className="p-2 border border-gray-600 rounded bg-gray-600 hover:bg-gray-700"
-                  >
-                    Previous
-                  </button>
-                </div>
-              )}
-              <button
-                onClick={downloadSalesReport}
-                className="p-2 border border-gray-600 rounded bg-purple-600 text-white hover:bg-purple-700 mt-2 lg:mt-0"
-              >
-                Download Excel
-              </button>
+            <div className="space-y-4">
+              <div className="bg-gray-600 p-4 rounded-lg">
+                <h4 className="text-lg font-semibold text-purple-400">
+                  Total Tickets Sold
+                </h4>
+                <p className="text-gray-300">{totalTicketsSold} tickets sold</p>
+              </div>
+              <div className="bg-gray-600 p-4 rounded-lg">
+                <h4 className="text-lg font-semibold text-purple-400">
+                  Revenue
+                </h4>
+                <p className="text-gray-300">₱ {totalRevenue.toFixed(2)}</p>
+              </div>
+              <div className="bg-gray-600 p-4 rounded-lg">
+                <h4 className="text-lg font-semibold text-purple-400">
+                  Avg. Tickets Sold per Day
+                </h4>
+                <p className="text-gray-300">
+                  {averageTicketsSoldPerDay.toFixed(2)} tickets
+                </p>
+              </div>
             </div>
           </div>
-          <div className="lg:flex lg:space-x-6">
-            <div className="w-full lg:w-2/3">
-              <Line data={chartData} options={chartOptions} />
+
+          <div className="w-full lg:w-2/3 flex flex-col justify-center items-center bg-gray-800 p-6 rounded-2xl shadow-2xl">
+            <div className="mb-4 w-full text-center">
+              <label
+                className="text-purple-400 block mb-2"
+                htmlFor="eventSelect"
+              >
+                Select Event:
+              </label>
+              <select
+                id="eventSelect"
+                className="bg-gray-600 text-gray-300 p-2 rounded-lg w-full max-w-xs"
+                value={selectedEvent}
+                onChange={(e) => setSelectedEvent(e.target.value)}
+              >
+                {events.map((event) => (
+                  <option key={event.id} value={event.id}>
+                    {event.name}
+                  </option>
+                ))}
+              </select>
             </div>
-            <div className="w-full lg:w-1/3 mt-6 lg:mt-0">
-              <div className="bg-gray-700 p-6 rounded-2xl shadow-2xl">
-                <h3 className="text-2xl mb-4 text-center font-bold text-purple-400">
-                  Sales Summary
-                </h3>
-                <div className="space-y-4">
-                  <div className="bg-gray-600 p-4 rounded-lg">
-                    <h4 className="text-lg font-semibold text-purple-400">
-                      Total Tickets Sold
-                    </h4>
-                    <p className="text-gray-300">
-                      {totalTicketsSold} tickets sold
-                    </p>
-                  </div>
-                  <div className="bg-gray-600 p-4 rounded-lg">
-                    <h4 className="text-lg font-semibold text-purple-400">
-                      Revenue
-                    </h4>
-                    <p className="text-gray-300">${totalRevenue.toFixed(2)}</p>
-                  </div>
-                  <div className="bg-gray-600 p-4 rounded-lg">
-                    <h4 className="text-lg font-semibold text-purple-400">
-                      Average Tickets Sold per Day
-                    </h4>
-                    <p className="text-gray-300">
-                      {averageTicketsSoldPerDay.toFixed(2)} tickets
-                    </p>
-                  </div>
-                </div>
-              </div>
+
+            <div className="w-full max-w-md mt-6">
+              <h3 className="text-2xl font-bold text-purple-400 text-center mb-4">
+                Tickets Sold by Type
+              </h3>
+              {chartData.labels.length > 0 ? (
+                <Pie data={chartData} className="mx-auto" />
+              ) : (
+                <p className="text-gray-300 text-center">
+                  No data available to display.
+                </p>
+              )}
             </div>
           </div>
         </div>
