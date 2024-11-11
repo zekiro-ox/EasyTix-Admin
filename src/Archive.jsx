@@ -103,10 +103,12 @@ const ArchiveComponent = () => {
                 onClick={() => handleFolderClick(event.id)}
               >
                 <div className="flex items-center">
-                  <FaFolder className="text-purple-400 mr-2" />
+                  <FaFolder className="text-purple-400 mr-4" />
                   <div>
                     <p className="font-medium text-gray-200">{event.name}</p>
-                    <p className="text-sm text-gray-300">{event.date}</p>
+                    <p className="text-sm text-gray-300">
+                      {event.eventStartDate}
+                    </p>
                   </div>
                 </div>
               </div>

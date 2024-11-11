@@ -15,11 +15,15 @@ const UsersComponent = () => {
       // Fetch events from Firestore
       const eventsCollection = collection(db, "events");
       const eventDocs = await getDocs(eventsCollection);
-      const eventList = eventDocs.docs.map((doc) => ({
-        id: doc.id,
-        name: doc.data().name, // Assuming the event name is stored in the 'name' field
-        eventStartDate: doc.data().eventStartDate, // Fetch the event start date
-      }));
+      const eventList = eventDocs.docs
+        .map((doc) => ({
+          id: doc.id,
+          name: doc.data().name, // Assuming the event name is stored in the 'name' field
+          eventStartDate: doc.data().eventStartDate, // Fetch the event start date
+          eventStatus: doc.data().eventStatus, // Fetch the event status
+        }))
+        .filter((event) => event.eventStatus !== "archived"); // Filter out archived events
+
       setEvents(eventList);
     };
 
@@ -31,6 +35,15 @@ const UsersComponent = () => {
   };
 
   const handleFolderClick = async (eventId) => {
+    // Find the selected event
+    const selectedEvent = events.find((event) => event.id === eventId);
+
+    // Check if the event is archived
+    if (selectedEvent && selectedEvent.eventStatus === "archived") {
+      toast.error("This event is archived and cannot be accessed.");
+      return; // Exit the function if the event is archived
+    }
+
     setSelectedEvent(eventId);
     const customersCollection = collection(db, `events/${eventId}/customers`);
     const customerDocs = await getDocs(customersCollection);
@@ -83,7 +96,7 @@ const UsersComponent = () => {
                   onClick={() => handleFolderClick(event.id)} // Use event.id for fetching customers
                 >
                   <div className="flex items-center">
-                    <FaFolder className="text-purple-400 mr-2" />
+                    <FaFolder className="text-purple-400 mr-4" />
                     <div>
                       <p className="font-medium text-gray-200">{event.name}</p>
                       <p className="text-sm text-gray-400">
