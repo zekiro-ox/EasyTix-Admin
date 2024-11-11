@@ -30,6 +30,7 @@ const SalesReport = () => {
   const [totalTicketsSold, setTotalTicketsSold] = useState(0);
   const [totalRevenue, setTotalRevenue] = useState(0);
   const [averageTicketsSoldPerDay, setAverageTicketsSoldPerDay] = useState(0);
+  const [noCustomers, setNoCustomers] = useState(false); // New state variable
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -62,6 +63,14 @@ const SalesReport = () => {
 
         const customersRef = collection(eventDoc.ref, "customers");
         const customersSnapshot = await getDocs(customersRef);
+
+        // Check if there are no customers
+        if (customersSnapshot.empty) {
+          setNoCustomers(true);
+          return; // Exit if no customers
+        } else {
+          setNoCustomers(false); // Reset if there are customers
+        }
 
         customersSnapshot.forEach((customerDoc) => {
           const data = customerDoc.data();
@@ -181,7 +190,11 @@ const SalesReport = () => {
               <h3 className="text-2xl font-bold text-purple-400 text-center mb-4">
                 Tickets Sold by Type
               </h3>
-              {chartData.labels.length > 0 ? (
+              {noCustomers ? (
+                <p className="text-gray-300 text-center">
+                  Unfortunately, no tickets have been sold for this event yet.
+                </p>
+              ) : chartData.labels.length > 0 ? (
                 <Pie data={chartData} className="mx-auto" />
               ) : (
                 <p className="text-gray-300 text-center">
