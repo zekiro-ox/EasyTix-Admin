@@ -1,7 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FaUserCircle, FaSignOutAlt, FaCalendarAlt } from "react-icons/fa";
-import { getFirestore, collection, getDocs } from "firebase/firestore"; // Import Firestore functions
+import {
+  getFirestore,
+  collection,
+  getDocs,
+  query,
+  where,
+} from "firebase/firestore";
+import { db } from "./config/firebaseConfig"; // Import Firestore functions
 import Logo from "./assets/CompanyLogo.png";
 import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
@@ -18,7 +25,11 @@ const OrganizerDashboard = () => {
   const [events, setEvents] = useState([]); // State for storing events
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [showDropdown, setShowDropdown] = useState(false);
-  const [isLoggingOut, setIsLoggingOut] = useState(false); // State for logout loading animation
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [totalTicketsSold, setTotalTicketsSold] = useState(0);
+  const [totalRevenue, setTotalRevenue] = useState(0);
+  const [averageTicketsPerDay, setAverageTicketsPerDay] = useState(0);
+  const [feedbacks, setFeedbacks] = useState([]); // State to hold feedback data// State for logout loading animation
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -26,16 +37,105 @@ const OrganizerDashboard = () => {
       const db = getFirestore();
       const eventsCollection = collection(db, "events");
       const eventsSnapshot = await getDocs(eventsCollection);
-      const eventsList = eventsSnapshot.docs.map((doc) => ({
-        id: doc.id, // Include the document ID
-        ...doc.data(),
-      }));
+      const currentDate = new Date(); // Get the current date
+
+      const eventsList = eventsSnapshot.docs
+        .map((doc) => ({
+          id: doc.id, // Include the document ID
+          ...doc.data(),
+        }))
+        .filter((event) => {
+          const startDate = new Date(event.startDate);
+          const endDate = new Date(event.endDate); // Assuming you have an eventEndDate field
+          return (
+            event.eventStatus !== "archived" && // Check if the event is not archived
+            startDate <= currentDate && // Check if the event has started
+            endDate >= currentDate // Check if the event has not ended
+          );
+        });
+
       setEvents(eventsList); // Set the fetched events to state
     };
 
     fetchEvents();
   }, []);
+  useEffect(() => {
+    const fetchSalesData = async () => {
+      const salesDataArray = [];
+      const eventsRef = collection(db, "events");
+      const eventsSnapshot = await getDocs(eventsRef);
 
+      for (const eventDoc of eventsSnapshot.docs) {
+        const customersRef = collection(eventDoc.ref, "customers");
+        const customersSnapshot = await getDocs(customersRef);
+
+        let totalTickets = 0;
+        let totalRevenueForEvent = 0;
+
+        customersSnapshot.forEach((customerDoc) => {
+          const data = customerDoc.data();
+          const quantity = data.quantity || 0;
+          const ticketPrice = data.totalAmount || 0;
+
+          totalTickets += quantity;
+          totalRevenueForEvent += ticketPrice;
+        });
+
+        salesDataArray.push({
+          eventId: eventDoc.id,
+          ticketsSold: totalTickets,
+          revenue: totalRevenueForEvent,
+        });
+      }
+
+      // Calculate total tickets sold, total revenue, and average tickets per day
+      const totalTickets = salesDataArray.reduce(
+        (acc, item) => acc + item.ticketsSold,
+        0
+      );
+      const totalRev = salesDataArray.reduce(
+        (acc, item) => acc + item.revenue,
+        0
+      );
+      const averageTickets =
+        salesDataArray.length > 0 ? totalTickets / salesDataArray.length : 0;
+
+      setTotalTicketsSold(totalTickets);
+      setTotalRevenue(totalRev);
+      setAverageTicketsPerDay(averageTickets);
+    };
+
+    fetchSalesData();
+  }, []);
+  useEffect(() => {
+    const fetchFeedbacks = async () => {
+      const feedbackArray = [];
+      const usersRef = collection(db, "users");
+      const usersSnapshot = await getDocs(usersRef);
+
+      for (const userDoc of usersSnapshot.docs) {
+        const feedbackRef = collection(userDoc.ref, "feedback");
+        const feedbackSnapshot = await getDocs(feedbackRef);
+
+        feedbackSnapshot.forEach((feedbackDoc) => {
+          const feedbackData = feedbackDoc.data();
+          const createdAt = feedbackData.createdAt.toDate().toLocaleString(); // Convert Firestore timestamp to readable format
+          const feedbackText = feedbackData.feedback; // Assuming the feedback field is named 'feedback'
+
+          feedbackArray.push({
+            id: feedbackDoc.id,
+            username: userDoc.data().username, // Fetch username from user document
+            feedback: feedbackText,
+            createdAt: createdAt,
+          });
+        });
+      }
+
+      setFeedbacks(feedbackArray);
+    };
+
+    fetchFeedbacks();
+  }, []);
   // Function to format date
   const getFormattedDate = (dateString) => {
     const date = new Date(dateString);
@@ -127,22 +227,43 @@ const OrganizerDashboard = () => {
               <h2 className="text-4xl font-bold mb-6">Sales and Feedback</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div className="bg-purple-900 p-6 rounded-lg shadow-lg">
-                  <h3 className="text-2xl font-bold mb-2">Total Customers</h3>
-                  <p className="text-lg">150</p>
+                  <h3 className="text-2xl font-bold mb-2">
+                    Total Tickets Sold
+                  </h3>
+                  <p className="text-lg">{totalTicketsSold} tickets sold</p>
+                </div>
+                <div className="bg-purple-900 p-6 rounded-lg shadow-lg">
+                  <h3 className="text-2xl font-bold mb-2">Total Revenue</h3>
+                  <p className="text-lg">₱ {totalRevenue.toFixed(2)}</p>
                 </div>
                 <div className="bg-purple-900 p-6 rounded-lg shadow-lg">
                   <h3 className="text-2xl font-bold mb-2">
-                    Average Customers Per Event
+                    Average Tickets per Event
                   </h3>
-                  <p className="text-lg">50</p>
+                  <p className="text-lg">
+                    {averageTicketsPerDay.toFixed(2)} tickets
+                  </p>
                 </div>
                 <div className="bg-purple-900 p-6 rounded-lg shadow-lg col-span-2">
                   <h3 className="text-2xl font-bold mb-2">Feedbacks</h3>
-                  <p className="text-lg">Great event, enjoyed it!</p>
-                  <p className="text-lg">Could improve on logistics.</p>
-                  <p className="text-lg">
-                    Amazing experience, would attend again!
-                  </p>
+                  {feedbacks.length > 0 ? (
+                    feedbacks.map((feedback) => (
+                      <div
+                        key={feedback.id}
+                        className="bg-gray-800 p-4 rounded-lg mb-2"
+                      >
+                        <h4 className="text-lg font-semibold text-purple-400">
+                          {feedback.username}
+                        </h4>
+                        <p className="text-gray-300">{feedback.feedback}</p>
+                        <p className="text-gray-500 text-sm">
+                          {feedback.createdAt}
+                        </p>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-gray-300">No feedback available.</p>
+                  )}
                 </div>
               </div>
             </div>
