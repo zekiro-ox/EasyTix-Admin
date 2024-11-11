@@ -1,13 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FaUserCircle, FaSignOutAlt, FaCalendarAlt } from "react-icons/fa";
-import {
-  getFirestore,
-  collection,
-  getDocs,
-  query,
-  where,
-} from "firebase/firestore";
+import { getFirestore, collection, getDocs } from "firebase/firestore";
 import { db } from "./config/firebaseConfig"; // Import Firestore functions
 import Logo from "./assets/CompanyLogo.png";
 import Carousel from "react-multi-carousel";
@@ -29,7 +23,7 @@ const OrganizerDashboard = () => {
   const [totalTicketsSold, setTotalTicketsSold] = useState(0);
   const [totalRevenue, setTotalRevenue] = useState(0);
   const [averageTicketsPerDay, setAverageTicketsPerDay] = useState(0);
-  const [feedbacks, setFeedbacks] = useState([]); // State to hold feedback data// State for logout loading animation
+  const [feedbacks, setFeedbacks] = useState([]); // State to hold feedback data
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -59,6 +53,7 @@ const OrganizerDashboard = () => {
 
     fetchEvents();
   }, []);
+
   useEffect(() => {
     const fetchSalesData = async () => {
       const salesDataArray = [];
@@ -107,6 +102,7 @@ const OrganizerDashboard = () => {
 
     fetchSalesData();
   }, []);
+
   useEffect(() => {
     const fetchFeedbacks = async () => {
       const feedbackArray = [];
@@ -136,13 +132,12 @@ const OrganizerDashboard = () => {
 
     fetchFeedbacks();
   }, []);
-  // Function to format date
+
   const getFormattedDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString();
   };
 
-  // Function to format time
   const getFormattedTime = (timeString) => {
     const time = new Date(`1970-01-01T${timeString}`); // Assuming timeString is in HH:MM format
     return time.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
@@ -156,9 +151,7 @@ const OrganizerDashboard = () => {
   const handleLogout = () => {
     setIsLoggingOut(true); // Start logout animation
 
-    // Simulate logout process with a timeout
     setTimeout(() => {
-      // Perform logout actions (e.g., clear session, redirect)
       localStorage.clear(); // Example: Clear local storage
       navigate("/organizer-login"); // Redirect to login page after logout
       setIsLoggingOut(false); // Stop logout animation after a short delay
@@ -167,14 +160,14 @@ const OrganizerDashboard = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-900 text-white font-kanit">
-      <header className="font-kanit flex items-center justify-between p-4 bg-gray-800">
+      <header className="flex items-center justify-between p-4 bg-gray-800">
         <Link to="/" className="flex items-center">
           <img src={Logo} alt="Company Logo" className="h-8" />
         </Link>
         <h1 className="text-2xl font-bold">Dashboard</h1>
         <div className="relative">
           <FaUserCircle
-            className="h-8 w-12 text-white cursor-pointer"
+            className="h-6 w-10 text-white cursor-pointer"
             onClick={() => setShowDropdown(!showDropdown)}
           />
           {showDropdown && (
@@ -184,7 +177,7 @@ const OrganizerDashboard = () => {
               }`}
             >
               <button
-                className="block w-full bg-gray-800 text-left px-4 py-2 text-white hover:bg-purple-900 rounded-lg flex items-center"
+                className="block w-full bg-gray-700 text-left px-4 py-2 text-white hover:bg-purple-700 rounded-lg flex items-center"
                 onClick={handleLogout}
               >
                 <FaSignOutAlt className="flex-shrink-0 w-5 h-5 transition duration-75 mr-2" />
@@ -194,28 +187,28 @@ const OrganizerDashboard = () => {
           )}
         </div>
       </header>
-      <main className="flex flex-col items-center p-8">
+      <main className="flex flex-col items-center p-4 sm:p-8">
         {selectedEvent ? (
           <h2 className="text-4xl font-bold mb-6">
             {selectedEvent.name} Details
           </h2>
         ) : (
           <>
-            <h2 className="text-4xl font-bold mb-6">Events</h2>
             <div className="w-full max-w-4xl">
               <Carousel responsive={responsive}>
                 {events.map((event) => (
                   <div
                     key={event.id}
-                    className="cursor-pointer bg-purple-900 p-4 m-2 rounded-lg shadow-lg drop-shadow-lg"
+                    className="cursor-pointer bg-gray-700 p-4 m-2 rounded-lg shadow-lg drop-shadow-lg"
                     onClick={() => handleEventClick(event)}
                   >
                     <div className="flex items-center mb-2">
-                      <FaCalendarAlt className="text-white mr-2" />
-                      <h3 className="text-2xl font-bold">{event.name}</h3>
+                      <FaCalendarAlt className="text-purple-400 mr-2" />
+                      <h3 className="text-2xl font-bold text-purple-400">
+                        {event.name}
+                      </h3>
                     </div>
                     <p className="text-lg">
-                      {/* Use the new functions to format date and time */}
                       {getFormattedDate(event.eventStartDate)}{" "}
                       {getFormattedTime(event.startTime)}
                     </p>
@@ -223,34 +216,41 @@ const OrganizerDashboard = () => {
                 ))}
               </Carousel>
             </div>
-            <div className="mt-10">
-              <h2 className="text-4xl font-bold mb-6">Sales and Feedback</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div className="bg-purple-900 p-6 rounded-lg shadow-lg">
-                  <h3 className="text-2xl font-bold mb-2">
-                    Total Tickets Sold
-                  </h3>
-                  <p className="text-lg">{totalTicketsSold} tickets sold</p>
+            <div className="flex flex-col lg:flex-row mt-6 space-y-6 lg:space-x-6 lg:space-y-0 w-full max-w-4xl">
+              {/* Global Sales Summary Container */}
+              <div className="font-kanit bg-gray-900 p-6 rounded-2xl shadow-2xl w-full lg:w-1/2">
+                <h3 className="text-2xl mb-4 text-center font-bold text-purple-400">
+                  Global Ticket Sales Summary
+                </h3>
+                <div className="space-y-4">
+                  <div className="bg-gray-700 p-4 rounded-lg">
+                    <h4 className="text-lg font-semibold text-purple-400">
+                      Total Tickets Sold (All Events)
+                    </h4>
+                    <p className="text-gray-300">
+                      {totalTicketsSold} tickets sold
+                    </p>
+                  </div>
+                  <div className="bg-gray-700 p-4 rounded-lg">
+                    <h4 className="text-lg font-semibold text-purple-400">
+                      Total Revenue (All Events)
+                    </h4>
+                    <p className="text-gray-300">₱ {totalRevenue.toFixed(2)}</p>
+                  </div>
                 </div>
-                <div className="bg-purple-900 p-6 rounded-lg shadow-lg">
-                  <h3 className="text-2xl font-bold mb-2">Total Revenue</h3>
-                  <p className="text-lg">₱ {totalRevenue.toFixed(2)}</p>
-                </div>
-                <div className="bg-purple-900 p-6 rounded-lg shadow-lg">
-                  <h3 className="text-2xl font-bold mb-2">
-                    Average Tickets per Event
-                  </h3>
-                  <p className="text-lg">
-                    {averageTicketsPerDay.toFixed(2)} tickets
-                  </p>
-                </div>
-                <div className="bg-purple-900 p-6 rounded-lg shadow-lg col-span-2">
-                  <h3 className="text-2xl font-bold mb-2">Feedbacks</h3>
+              </div>
+
+              {/* Customer Feedback Container */}
+              <div className="font-kanit bg-gray-900 p-6 rounded-2xl shadow-2xl w-full lg:w-1/2">
+                <h3 className="text-2xl mb-4 text-center font-bold text-purple-400">
+                  Customer Feedback
+                </h3>
+                <div className="space-y-4">
                   {feedbacks.length > 0 ? (
                     feedbacks.map((feedback) => (
                       <div
                         key={feedback.id}
-                        className="bg-gray-800 p-4 rounded-lg mb-2"
+                        className="bg-gray-700 p-4 rounded-lg"
                       >
                         <h4 className="text-lg font-semibold text-purple-400">
                           {feedback.username}

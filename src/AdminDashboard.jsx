@@ -1,64 +1,120 @@
 import React, { useState, useEffect } from "react";
+import { Pie } from "react-chartjs-2";
+import "chart.js/auto";
 import Sidebar from "./Sidebar";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "./config/firebaseConfig";
 
 const AdminDashboard = () => {
-  const [salesData, setSalesData] = useState([]);
+  const [salesData, setSalesData] = useState({});
+  const [chartData, setChartData] = useState({
+    labels: [],
+    datasets: [
+      {
+        label: "Tickets Sold by Type",
+        data: [],
+        backgroundColor: [
+          "#FF6384",
+          "#36A2EB",
+          "#FFCE56",
+          "#4BC0C0",
+          "#9966FF",
+          "#FF9F40",
+        ],
+      },
+    ],
+  });
   const [totalTicketsSold, setTotalTicketsSold] = useState(0);
   const [totalRevenue, setTotalRevenue] = useState(0);
   const [averageTicketsPerDay, setAverageTicketsPerDay] = useState(0);
-  const [feedbacks, setFeedbacks] = useState([]); // State to hold feedback data
+  const [events, setEvents] = useState([]);
+  const [selectedEvent, setSelectedEvent] = useState("");
+  const [noCustomers, setNoCustomers] = useState(false);
+  const [feedbacks, setFeedbacks] = useState([]);
+  const [globalSalesData, setGlobalSalesData] = useState({});
+  const [totalGlobalTicketsSold, setTotalGlobalTicketsSold] = useState(0);
+  const [totalGlobalRevenue, setTotalGlobalRevenue] = useState(0); // State to hold feedback data
 
   useEffect(() => {
-    const fetchSalesData = async () => {
-      const salesDataArray = [];
+    const fetchEvents = async () => {
       const eventsRef = collection(db, "events");
       const eventsSnapshot = await getDocs(eventsRef);
-
-      for (const eventDoc of eventsSnapshot.docs) {
-        const customersRef = collection(eventDoc.ref, "customers");
-        const customersSnapshot = await getDocs(customersRef);
-
-        let totalTickets = 0;
-        let totalRevenueForEvent = 0;
-
-        customersSnapshot.forEach((customerDoc) => {
-          const data = customerDoc.data();
-          const quantity = data.quantity || 0;
-          const ticketPrice = data.totalAmount || 0;
-
-          totalTickets += quantity;
-          totalRevenueForEvent += ticketPrice;
-        });
-
-        salesDataArray.push({
-          eventId: eventDoc.id,
-          ticketsSold: totalTickets,
-          revenue: totalRevenueForEvent,
-        });
+      const eventsList = eventsSnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setEvents(eventsList);
+      if (eventsList.length > 0) {
+        setSelectedEvent(eventsList[0].id);
       }
-
-      setSalesData(salesDataArray);
     };
-
-    fetchSalesData();
+    fetchEvents();
   }, []);
 
   useEffect(() => {
-    // Calculate total tickets sold, total revenue, and average tickets per day
-    const totalTickets = salesData.reduce(
-      (acc, item) => acc + item.ticketsSold,
-      0
-    );
-    const totalRev = salesData.reduce((acc, item) => acc + item.revenue, 0);
-    const averageTickets =
-      salesData.length > 0 ? totalTickets / salesData.length : 0;
+    const fetchSalesData = async () => {
+      const salesData = {};
+      let totalTicketsSold = 0;
+      let totalRevenue = 0;
 
-    setTotalTicketsSold(totalTickets);
-    setTotalRevenue(totalRev);
-    setAverageTicketsPerDay(averageTickets);
-  }, [salesData]);
+      const customersRef = collection(db, `events/${selectedEvent}/customers`);
+      const customersSnapshot = await getDocs(customersRef);
+
+      if (customersSnapshot.empty) {
+        setNoCustomers(true);
+        return; // Exit if no customers
+      } else {
+        setNoCustomers(false); // Reset if there are customers
+      }
+
+      customersSnapshot.forEach((customerDoc) => {
+        const data = customerDoc.data();
+        const ticketType = data.ticketType;
+        const quantity = data.quantity;
+        const ticketPrice = data.totalAmount || 0;
+
+        if (!salesData[ticketType]) {
+          salesData[ticketType] = 0;
+        }
+        salesData[ticketType] += quantity;
+        totalTicketsSold += quantity;
+        totalRevenue += ticketPrice;
+      });
+
+      setSalesData(salesData);
+      setTotalTicketsSold(totalTicketsSold);
+      setTotalRevenue(totalRevenue);
+    };
+    fetchSalesData();
+  }, [selectedEvent]);
+
+  useEffect(() => {
+    const labels = Object.keys(salesData);
+    const data = Object.values(salesData);
+
+    if (labels.length > 0) {
+      setChartData({
+        labels,
+        datasets: [
+          {
+            label: "Tickets Sold by Type",
+            data,
+            backgroundColor: [
+              "#FF6384",
+              "#36A2EB",
+              "#FFCE56",
+              "#4BC0C0",
+              "#9966FF",
+              "#FF9F40",
+            ],
+          },
+        ],
+      });
+
+      const daysCount = labels.length; // Number of ticket types
+      setAverageTicketsPerDay(totalTicketsSold / daysCount);
+    }
+  }, [salesData, totalTicketsSold]);
 
   useEffect(() => {
     const fetchFeedbacks = async () => {
@@ -88,6 +144,42 @@ const AdminDashboard = () => {
     };
 
     fetchFeedbacks();
+  }, []);
+
+  useEffect(() => {
+    const fetchGlobalSalesData = async () => {
+      const globalSalesData = {};
+      let totalGlobalTicketsSold = 0;
+      let totalGlobalRevenue = 0;
+
+      const eventsRef = collection(db, "events");
+      const eventsSnapshot = await getDocs(eventsRef);
+
+      for (const eventDoc of eventsSnapshot.docs) {
+        const customersRef = collection(eventDoc.ref, "customers");
+        const customersSnapshot = await getDocs(customersRef);
+
+        customersSnapshot.forEach((customerDoc) => {
+          const data = customerDoc.data();
+          const ticketType = data.ticketType;
+          const quantity = data.quantity;
+          const ticketPrice = data.totalAmount || 0;
+
+          if (!globalSalesData[ticketType]) {
+            globalSalesData[ticketType] = 0;
+          }
+          globalSalesData[ticketType] += quantity;
+          totalGlobalTicketsSold += quantity;
+          totalGlobalRevenue += ticketPrice;
+        });
+      }
+
+      setGlobalSalesData(globalSalesData);
+      setTotalGlobalTicketsSold(totalGlobalTicketsSold);
+      setTotalGlobalRevenue(totalGlobalRevenue);
+    };
+
+    fetchGlobalSalesData();
   }, []);
 
   return (
@@ -130,6 +222,74 @@ const AdminDashboard = () => {
                 </h4>
                 <p className="text-gray-300">
                   {averageTicketsPerDay.toFixed(2)} tickets
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Pie Chart Container */}
+          <div className="w-full lg:w-1/2 flex flex-col justify-center items-center bg-gray-800 p-6 rounded-2xl shadow-2xl">
+            <div className="mb-4 w-full text-center">
+              <label
+                className="text-purple-400 block mb-2"
+                htmlFor="eventSelect"
+              >
+                Select Event:
+              </label>
+              <select
+                id="eventSelect"
+                className="bg-gray-600 text-gray-300 p-2 rounded-lg w-full max-w-xs"
+                value={selectedEvent}
+                onChange={(e) => setSelectedEvent(e.target.value)}
+              >
+                {events.map((event) => (
+                  <option key={event.id} value={event.id}>
+                    {event.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="w-full max-w-md mt-6">
+              <h3 className="text-2xl font-bold text-purple-400 text-center mb-4">
+                Tickets Sold by Type
+              </h3>
+              {noCustomers ? (
+                <p className="text-gray-300 text-center">
+                  Unfortunately, no tickets have been sold for this event yet.
+                </p>
+              ) : chartData.labels.length > 0 ? (
+                <Pie data={chartData} className="mx-auto" />
+              ) : (
+                <p className="text-gray-300 text-center">
+                  No data available to display.
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="flex flex-col lg:flex-row mt-6 space-y-6 lg:space-x-6 lg:space-y-0">
+          {/* Global Sales Summary Container */}
+          <div className="font-kanit bg-gray-900 p-6 rounded-2xl shadow-2xl w-full lg:w-1/2">
+            <h3 className="text-2xl mb-4 text-center font-bold text-purple-400">
+              Global Ticket Sales Summary
+            </h3>
+            <div className="space-y-4">
+              <div className="bg-gray-700 p-4 rounded-lg">
+                <h4 className="text-lg font-semibold text-purple-400">
+                  Total Tickets Sold (All Events)
+                </h4>
+                <p className="text-gray-300">
+                  {totalGlobalTicketsSold} tickets sold
+                </p>
+              </div>
+              <div className="bg-gray-700 p-4 rounded-lg">
+                <h4 className="text-lg font-semibold text-purple-400">
+                  Total Revenue (All Events)
+                </h4>
+                <p className="text-gray-300">
+                  ₱ {totalGlobalRevenue.toFixed(2)}
                 </p>
               </div>
             </div>

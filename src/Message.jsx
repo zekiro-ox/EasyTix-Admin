@@ -10,6 +10,7 @@ import {
   getDocs,
 } from "firebase/firestore";
 import { db } from "./config/firebaseConfig";
+import { useMessage } from "./MessageContext";
 
 const MessageComponent = () => {
   const [messages, setMessages] = useState([]);
@@ -17,6 +18,7 @@ const MessageComponent = () => {
   const [replyMessage, setReplyMessage] = useState("");
   const [messageHistory, setMessageHistory] = useState([]);
   const [adminId, setAdminId] = useState(null);
+  const { setNewMessageCount } = useMessage();
 
   const fetchAdminId = async () => {
     const adminRef = collection(db, "admins");
@@ -54,12 +56,25 @@ const MessageComponent = () => {
         ...message,
         senderName: userNamesArray[index],
       }));
+      const newMessagesCount = await Promise.all(
+        messagesWithNames.map(async (message) => {
+          const repliesRef = collection(
+            db,
+            "conversations",
+            message.id,
+            "replies"
+          );
+          const repliesSnapshot = await getDocs(repliesRef);
+          return repliesSnapshot.empty ? 1 : 0;
+        })
+      );
 
+      setNewMessageCount(newMessagesCount.reduce((a, b) => a + b, 0)); // Sum up the counts
       setMessages(messagesWithNames);
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [setNewMessageCount]);
 
   const openMessage = async (message) => {
     setSelectedMessage(message);

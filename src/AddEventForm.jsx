@@ -17,14 +17,34 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
     eventStartDate: "", // Added the status field with a default value
     eventPosterURL: "",
     seatMapURL: "",
-    tickets: [{ type: "", price: "", quantity: "", column: "" }],
+    tickets: [
+      {
+        type: "General Admission",
+        price: "",
+        quantity: "",
+        column: "",
+        remainingQuantity: "",
+      },
+      {
+        type: "VIP",
+        price: "",
+        quantity: "",
+        column: "",
+        remainingQuantity: "",
+      },
+    ],
   });
 
   const [formVisible, setFormVisible] = useState(true); // State to manage form visibility
 
   useEffect(() => {
     if (event && event.id) {
-      setNewEvent(event);
+      // Set newEvent state with event data
+      const updatedTickets = event.tickets.map((ticket) => ({
+        ...ticket,
+        quantity: ticket.remainingQuantity || ticket.quantity, // Use remainingQuantity if available
+      }));
+      setNewEvent({ ...event, tickets: updatedTickets });
     } else {
       resetForm();
     }
@@ -68,13 +88,22 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
     const { name, value } = e.target;
     const tickets = [...newEvent.tickets];
     tickets[index] = { ...tickets[index], [name]: value };
+
+    // If the user is changing the quantity, we do not want to keep remainingQuantity
+    if (name === "quantity") {
+      delete tickets[index].remainingQuantity; // Remove remainingQuantity on quantity change
+    }
+
     setNewEvent({ ...newEvent, tickets });
   };
 
   const handleAddTicket = () => {
     setNewEvent({
       ...newEvent,
-      tickets: [...newEvent.tickets, { type: "", price: "", quantity: "" }],
+      tickets: [
+        ...newEvent.tickets,
+        { type: "", price: "", quantity: "", column: "" },
+      ],
     });
   };
 
@@ -127,7 +156,10 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
       eventStartDate: "", // Reset status to default value
       eventPosterURL: "",
       seatMapURL: "",
-      tickets: [{ type: "", price: "", quantity: "", column: "" }],
+      tickets: [
+        { type: "General Admission", price: "", quantity: "", column: "" },
+        { type: "VIP", price: "", quantity: "", column: "" },
+      ],
     });
   };
 
@@ -212,38 +244,6 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
         </div>
         <div className="col-span-2 sm:col-span-1">
           <label
-            htmlFor="startDate"
-            className="block text-sm font-medium text-gray-300"
-          >
-            Registration Start Date
-          </label>
-          <input
-            type="date"
-            id="startDate"
-            name="startDate"
-            className="mt-1 block w-full px-3 py-2 rounded-md border border-gray-600 shadow-sm focus:outline-none focus:ring focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-700 text-white"
-            value={newEvent.startDate}
-            onChange={handleInputChange}
-          />
-        </div>
-        <div className="col-span-2 sm:col-span-1">
-          <label
-            htmlFor="endDate"
-            className="block text-sm font-medium text-gray-300"
-          >
-            Registration End Date
-          </label>
-          <input
-            type="date"
-            id="endDate"
-            name="endDate"
-            className="mt-1 block w-full px-3 py-2 rounded-md border border-gray-600 shadow-sm focus:outline-none focus:ring focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-700 text-white"
-            value={newEvent.endDate}
-            onChange={handleInputChange}
-          />
-        </div>
-        <div className="col-span-2 sm:col-span-1">
-          <label
             htmlFor="startTime"
             className="block text-sm font-medium text-gray-300"
           >
@@ -271,6 +271,38 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
             name="endTime"
             className="mt-1 block w-full px-3 py-2 rounded-md border border-gray-600 shadow-sm focus:outline-none focus:ring focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-700 text-white"
             value={newEvent.endTime}
+            onChange={handleInputChange}
+          />
+        </div>
+        <div className="col-span-2 sm:col-span-1">
+          <label
+            htmlFor="startDate"
+            className="block text-sm font-medium text-gray-300"
+          >
+            Registration Start Date
+          </label>
+          <input
+            type="date"
+            id="startDate"
+            name="startDate"
+            className="mt-1 block w-full px-3 py-2 rounded-md border border-gray-600 shadow-sm focus:outline-none focus:ring focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-700 text-white"
+            value={newEvent.startDate}
+            onChange={handleInputChange}
+          />
+        </div>
+        <div className="col-span-2 sm:col-span-1">
+          <label
+            htmlFor="endDate"
+            className="block text-sm font-medium text-gray-300"
+          >
+            Registration End Date
+          </label>
+          <input
+            type="date"
+            id="endDate"
+            name="endDate"
+            className="mt-1 block w-full px-3 py-2 rounded-md border border-gray-600 shadow-sm focus:outline-none focus:ring focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-700 text-white"
+            value={newEvent.endDate}
             onChange={handleInputChange}
           />
         </div>

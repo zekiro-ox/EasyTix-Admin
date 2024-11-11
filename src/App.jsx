@@ -11,6 +11,7 @@ import OrganizerComponent from "./Organizer";
 import ArchiveComponent from "./Archive";
 import OrganizerDashboard from "./OrganizerDashboard";
 import EventPanel from "./EventPanel";
+import { MessageProvider } from "./MessageContext";
 
 import "./App.css";
 
@@ -26,29 +27,31 @@ const salesData = Array.from({ length: 150 }, (_, i) => {
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/admin-login" element={<AdminLogin />} />
-        <Route path="/organizer-login" element={<OrganizerLogin />} />
-        <Route
-          path="/dashboard"
-          element={<AdminDashboard salesData={salesData} />}
-        />
-        <Route path="/events" element={<EventComponent />} />
-        <Route path="/messages" element={<MessageComponent />} />
-        <Route path="/users" element={<UsersComponent />} />
-        <Route path="/organizer" element={<OrganizerComponent />} />
-        <Route path="/archive" element={<ArchiveComponent />} />
-        <Route
-          path="/sales-report"
-          element={<SalesReport salesData={salesData} />}
-        />{" "}
-        {/* Add SalesReport route */}
-        <Route path="/" element={<AdminLogin />} />
-        <Route path="/organizer-dashboard" element={<OrganizerDashboard />} />
-        <Route path="/event/:id" element={<EventPanel />} />
-      </Routes>
-    </Router>
+    <MessageProvider>
+      <Router>
+        <Routes>
+          <Route path="/admin-login" element={<AdminLogin />} />
+          <Route path="/organizer-login" element={<OrganizerLogin />} />
+          <Route
+            path="/dashboard"
+            element={<AdminDashboard salesData={salesData} />}
+          />
+          <Route path="/events" element={<EventComponent />} />
+          <Route path="/messages" element={<MessageComponent />} />
+          <Route path="/users" element={<UsersComponent />} />
+          <Route path="/organizer" element={<OrganizerComponent />} />
+          <Route path="/archive" element={<ArchiveComponent />} />
+          <Route
+            path="/sales-report"
+            element={<SalesReport salesData={salesData} />}
+          />{" "}
+          {/* Add SalesReport route */}
+          <Route path="/" element={<AdminLogin />} />
+          <Route path="/organizer-dashboard" element={<OrganizerDashboard />} />
+          <Route path="/event/:id" element={<EventPanel />} />
+        </Routes>
+      </Router>
+    </MessageProvider>
   );
 }
 

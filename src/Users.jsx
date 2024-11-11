@@ -93,7 +93,7 @@ const UsersComponent = () => {
                 <div
                   key={event.id}
                   className="bg-gray-800 rounded-lg shadow-md p-4 flex items-center justify-between cursor-pointer hover:bg-gray-700"
-                  onClick={() => handleFolderClick(event.id)} // Use event.id for fetching customers
+                  onClick={() => handleFolderClick(event.id)}
                 >
                   <div className="flex items-center">
                     <FaFolder className="text-purple-400 mr-4" />
@@ -101,8 +101,7 @@ const UsersComponent = () => {
                       <p className="font-medium text-gray-200">{event.name}</p>
                       <p className="text-sm text-gray-400">
                         {event.eventStartDate}
-                      </p>{" "}
-                      {/* Display the event start date */}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -125,25 +124,25 @@ const UsersComponent = () => {
                 <table className="font-kanit min-w-full bg-gray-700 rounded-lg shadow-md overflow-hidden">
                   <thead className="bg-purple-800 text-white">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-medium tracking-wider">
                         ID
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-medium tracking-wider">
                         Name
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-medium tracking-wider">
                         Email
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-medium tracking-wider">
                         Ticket Type
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-medium tracking-wider">
                         Quantity
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-medium tracking-wider">
                         Amount
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-medium tracking-wider">
                         Status
                       </th>
                     </tr>
@@ -151,25 +150,23 @@ const UsersComponent = () => {
                   <tbody className="divide-y divide-gray-700">
                     {filteredUsers.map((user) => (
                       <tr key={user.id}>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
                           {user.id}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                          {`${user.firstName} ${user.lastName}`}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">{`${user.firstName} ${user.lastName}`}</td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
                           {user.email}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
                           {user.ticketType}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
                           {user.quantity}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
                           {user.totalAmount}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
                           {user.status}
                         </td>
                       </tr>

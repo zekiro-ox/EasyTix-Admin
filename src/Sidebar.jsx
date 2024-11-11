@@ -14,8 +14,10 @@ import {
 } from "react-icons/fa";
 import { MdDashboard } from "react-icons/md";
 import Logo from "./assets/CompanyLogo.png";
+import { useMessage } from "./MessageContext";
 
 const Sidebar = () => {
+  const { newMessageCount } = useMessage();
   const location = useLocation();
   const navigate = useNavigate();
   const [activeLink, setActiveLink] = useState(location.pathname);
@@ -118,6 +120,11 @@ const Sidebar = () => {
               >
                 <FaEnvelope className="flex-shrink-0 w-5 h-5 transition duration-75" />
                 <span className="flex-1 ms-3 whitespace-nowrap">Messages</span>
+                {newMessageCount > 0 && (
+                  <span className="bg-purple-400 text-white rounded-full px-2 text-xs">
+                    {newMessageCount}
+                  </span>
+                )}
               </Link>
             </li>
             <li>
@@ -131,7 +138,9 @@ const Sidebar = () => {
                 onClick={() => handleLinkClick("/users")}
               >
                 <FaUsers className="flex-shrink-0 w-5 h-5 transition duration-75" />
-                <span className="flex-1 ms-3 whitespace-nowrap">Users</span>
+                <span className="flex-1 ms-3 whitespace-nowrap">
+                  Participants
+                </span>
               </Link>
             </li>
             {/* Organizer Menu */}
@@ -150,24 +159,6 @@ const Sidebar = () => {
               </Link>
             </li>
             {/* End of Organizer Menu */}
-            {/* Sales Report Menu */}
-            <li>
-              <Link
-                to="/sales-report"
-                className={`flex items-center p-4 rounded ${
-                  activeLink === "/sales-report"
-                    ? "bg-gray-200 text-black"
-                    : "text-white hover:bg-gray-200 hover:text-black"
-                }`}
-                onClick={() => handleLinkClick("/sales-report")}
-              >
-                <FaChartBar className="flex-shrink-0 w-5 h-5 transition duration-75" />
-                <span className="flex-1 ms-3 whitespace-nowrap">
-                  Sales Report
-                </span>
-              </Link>
-            </li>
-            {/* End of Sales Report Menu */}
             {/* Archive Menu */}
             <li>
               <Link
