@@ -4,6 +4,7 @@ import "chart.js/auto";
 import Sidebar from "./Sidebar";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "./config/firebaseConfig";
+import Papa from "papaparse";
 
 const AdminDashboard = () => {
   const [salesData, setSalesData] = useState({});
@@ -182,6 +183,32 @@ const AdminDashboard = () => {
     fetchGlobalSalesData();
   }, []);
 
+  const downloadCSV = () => {
+    const csvData = globalSalesData; // Use the global sales data
+
+    // Convert the object into an array of objects suitable for CSV
+    const csvArray = Object.keys(csvData).map((ticketType) => ({
+      TicketType: ticketType,
+      QuantitySold: csvData[ticketType],
+    }));
+
+    // Use PapaParse to convert the data to CSV
+    const csv = Papa.unparse(csvArray, {
+      header: true, // Include headers in the CSV
+    });
+
+    // Create a blob and download
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", "global_sales_report.csv");
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="flex flex-col lg:flex-row min-h-screen bg-gray-800 text-white">
       <Sidebar />
@@ -292,6 +319,12 @@ const AdminDashboard = () => {
                   ₱ {totalGlobalRevenue.toFixed(2)}
                 </p>
               </div>
+              <button
+                onClick={downloadCSV}
+                className="mt-4 px-4 py-2 rounded-lg bg-purple-800 text-white hover:bg-purple-700"
+              >
+                Download Global Sales Report (CSV)
+              </button>
             </div>
           </div>
 
