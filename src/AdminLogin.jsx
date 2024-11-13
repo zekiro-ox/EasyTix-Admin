@@ -176,9 +176,6 @@ const AdminLogin = () => {
         <div className="flex items-center justify-center mb-8">
           <img src={Logo} alt="Company Logo" className="h-20 w-auto" />
         </div>
-        <h2 className="text-2xl font-bold text-purple-400 text-center mb-4">
-          Login
-        </h2>
         <form className="mt-6" onSubmit={handleSubmit}>
           <div className="mb-4">
             <label
