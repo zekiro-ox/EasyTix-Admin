@@ -19,7 +19,19 @@ import {
   doc,
   addDoc,
 } from "firebase/firestore";
-import { db } from "./config/firebaseConfig"; // Adjust the path based on your Firebase setup
+import { db } from "./config/firebaseConfig";
+import { ToastContainer, toast } from "react-toastify"; // Import toast
+import "react-toastify/dist/ReactToastify.css"; // Import toast styles
+
+const notify = (message, id, type = "error") => {
+  if (!toast.isActive(id)) {
+    if (type === "error") {
+      toast.error(message, { toastId: id });
+    } else if (type === "success") {
+      toast.success(message, { toastId: id });
+    }
+  }
+}; // Adjust the path based on your Firebase setup
 
 const EventComponent = () => {
   const [events, setEvents] = useState([]);
@@ -43,8 +55,10 @@ const EventComponent = () => {
           ...doc.data(),
         }));
         setEvents(eventsData);
+        notify("Events fetched successfully!", "fetchSuccess", "success");
       } catch (error) {
         console.error("Error fetching events: ", error);
+        notify("Error fetching events", "fetchError");
       }
     };
     fetchEvents();
@@ -56,12 +70,14 @@ const EventComponent = () => {
 
   const handleAddEvent = async (newEvent) => {
     try {
-      const existingEvent = events.find((event) => event.id === newEvent.id);
-      if (!existingEvent) {
-        setEvents([...events, newEvent]);
-      }
+      const eventsRef = collection(db, "events");
+      const docRef = await addDoc(eventsRef, newEvent);
+      // Add the new event to the local state
+      setEvents([...events, { id: docRef.id, ...newEvent }]);
+      notify("Event added successfully!", "addSuccess", "success");
     } catch (error) {
       console.error("Error adding event: ", error);
+      notify("Error adding event", "addError");
     }
   };
 
@@ -78,9 +94,12 @@ const EventComponent = () => {
       );
       setEvents(updatedEvents);
       setSelectedEvent(null); // Clear selected event
-      setShowEditForm(false); // Hide edit form after editing
+      setShowEditForm(false);
+
+      notify("Event updated successfully!", "editSuccess", "success"); // Hide edit form after editing
     } catch (error) {
       console.error("Error updating event: ", error);
+      notify("Error updating event", "editError");
     }
   };
 
@@ -146,8 +165,10 @@ const EventComponent = () => {
       setEvents(updatedEvents);
       setShowConfirmation(false);
       setEventToArchive(null);
+      notify("Event archived successfully!", "archiveSuccess", "success");
     } catch (error) {
       console.error("Error archiving event: ", error);
+      notify("Error archiving event", "archiveError");
     }
   };
   const cancelArchive = () => {
@@ -164,6 +185,7 @@ const EventComponent = () => {
     <div className="flex flex-col lg:flex-row min-h-screen bg-gray-900 text-white">
       <Sidebar />
       <div className="font-kanit flex-1 flex flex-col pt-16 pr-5 pl-5 pb-5 lg:ml-64">
+        <ToastContainer />
         <div className="bg-gray-800 rounded-lg shadow-md p-6">
           <div className="mb-4 flex flex-col lg:flex-row items-start lg:items-center justify-between">
             <div className="relative flex-1 w-full lg:w-auto mb-4 lg:mb-0 lg:mr-4">

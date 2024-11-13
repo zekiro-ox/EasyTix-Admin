@@ -11,6 +11,18 @@ import {
 } from "firebase/firestore";
 import { db } from "./config/firebaseConfig";
 import { useMessage } from "./MessageContext";
+import { ToastContainer, toast } from "react-toastify"; // Import toast
+import "react-toastify/dist/ReactToastify.css"; // Import toast styles
+
+const notify = (message, id, type = "error") => {
+  if (!toast.isActive(id)) {
+    if (type === "error") {
+      toast.error(message, { toastId: id });
+    } else if (type === "success") {
+      toast.success(message, { toastId: id });
+    }
+  }
+};
 
 const MessageComponent = () => {
   const [messages, setMessages] = useState([]);
@@ -125,7 +137,7 @@ const MessageComponent = () => {
       });
 
       setReplyMessage("");
-      closeMessage(); // Optionally close the message after replying
+      notify("Messaged sent!", "successfullysent", "success"); // Optionally close the message after replying
     }
   };
 
@@ -136,6 +148,7 @@ const MessageComponent = () => {
     <div className="font-kanit flex flex-col lg:flex-row min-h-screen bg-gray-900 text-gray-100">
       <Sidebar />
       <div className="flex-1 flex flex-col pt-16 pr-5 pl-5 pb-5 lg:ml-64">
+        <ToastContainer />
         {selectedMessage ? (
           <div className="font-kanit bg-gray-900 text-gray-100 rounded-lg shadow-md p-6 w-full lg:w-3/4 mx-auto mt-16">
             <div className="flex justify-between items-center mb-6">

@@ -7,6 +7,18 @@ import {
   setDoc,
 } from "firebase/firestore"; // Import `doc` and `setDoc`
 import { getAuth } from "firebase/auth";
+import { ToastContainer, toast } from "react-toastify"; // Import toast
+import "react-toastify/dist/ReactToastify.css"; // Import toast styles
+
+const notify = (message, id, type = "error") => {
+  if (!toast.isActive(id)) {
+    if (type === "error") {
+      toast.error(message, { toastId: id });
+    } else if (type === "success") {
+      toast.success(message, { toastId: id });
+    }
+  }
+};
 
 const ChatComponent = ({ message, onClose, messages, setMessages }) => {
   const [reply, setReply] = useState("");
@@ -31,6 +43,8 @@ const ChatComponent = ({ message, onClose, messages, setMessages }) => {
         senderId: user.uid,
         timestamp: new Date().toISOString(),
       });
+
+      notify("Messaged sent!", "successfullysent", "success");
 
       // Update the last message in the conversation
       await updateLastMessage(message.id, reply, user.uid);

@@ -3,7 +3,9 @@ import { Link, useNavigate } from "react-router-dom";
 import { auth, db } from "./config/firebaseConfig"; // Adjust the path as per your project structure
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { collection, query, where, getDocs } from "firebase/firestore";
-import Logo from "./assets/CompanyLogo.png"; // Adjust the path as per your project structure
+import Logo from "./assets/CompanyLogo.png";
+import { ToastContainer, toast } from "react-toastify"; // Import toast
+import "react-toastify/dist/ReactToastify.css"; // Adjust the path as per your project structure
 
 const AdminLogin = () => {
   const [passwordVisible, setPasswordVisible] = useState(false);
@@ -53,15 +55,27 @@ const AdminLogin = () => {
     setRememberMe(e.target.checked);
   };
 
+  const notify = (message, id, type = "error") => {
+    if (!toast.isActive(id)) {
+      if (type === "error") {
+        toast.error(message, { toastId: id });
+      } else if (type === "success") {
+        toast.success(message, { toastId: id });
+      }
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (isLockedOut) {
-      setError("Too many failed attempts. Please wait 10 minutes.");
+      notify(
+        "Too many failed attempts. Please wait 10 minutes.",
+        "failed-attempts"
+      );
       return;
     }
 
     setIsLoading(true);
-    setError(""); // Clear any previous errors
 
     try {
       // First, sign in with Firebase Authentication
@@ -72,32 +86,78 @@ const AdminLogin = () => {
       if (user) {
         const uid = user.uid;
 
-        // Now check if the UID exists in the Firestore "admins" collection
+        // Check if the UID exists in the Firestore "admins" collection
         const adminsRef = collection(db, "admins");
-        const q = query(adminsRef, where("__name__", "==", uid)); // Match Firestore document ID with UID
-        const querySnapshot = await getDocs(q);
+        const adminQuery = query(adminsRef, where("__name__", "==", uid)); // Match Firestore document ID with UID
+        const adminSnapshot = await getDocs(adminQuery);
 
-        if (!querySnapshot.empty) {
-          // UID matches a document in the "admins" collection, allow login
+        if (!adminSnapshot.empty) {
+          // UID matches a document in the "admins" collection
           setIsLoggedIn(true);
           if (rememberMe) {
             localStorage.setItem("rememberedEmail", email);
           } else {
             localStorage.removeItem("rememberedEmail");
           }
-          navigate("/dashboard");
+
+          // Show success toast
+          notify(
+            "Login successful! Redirecting...",
+            "login-success",
+            "success"
+          );
+
+          // Delay navigation for the success toast
+          setTimeout(() => {
+            navigate("/dashboard");
+          }, 2000); // 2-second delay
         } else {
-          setError("You are not authorized to access this admin panel.");
+          // Check if the UID exists in the Firestore "organizers" collection
+          const organizersRef = collection(db, "organizer");
+          const organizerQuery = query(organizersRef, where("uid", "==", uid)); // Match Firestore document field uid with UID
+          const organizerSnapshot = await getDocs(organizerQuery);
+
+          if (!organizerSnapshot.empty) {
+            // UID matches a document in the "organizers" collection
+            setIsLoggedIn(true);
+            if (rememberMe) {
+              localStorage.setItem("rememberedEmail", email);
+            } else {
+              localStorage.removeItem("rememberedEmail");
+            }
+
+            // Show success toast
+            notify(
+              "Login successful! Redirecting...",
+              "login-success",
+              "success"
+            );
+
+            // Delay navigation for the success toast
+            setTimeout(() => {
+              navigate("/organizer-dashboard");
+            }, 2000); // 2-second delay
+          } else {
+            // User is neither admin nor organizer
+            notify(
+              "You are not authorized to access this application.",
+              "unauthorized"
+            );
+          }
         }
       }
     } catch (error) {
+      console.error("Sign-in error:", error);
       setFailedAttempts((prev) => {
         const attempts = prev + 1;
         if (attempts >= 3) {
           setIsLockedOut(true);
-          setError("Too many failed attempts. Please wait 10 minutes.");
+          notify(
+            "Too many failed attempts. Please wait 10 minutes.",
+            "failed-attempts"
+          );
         } else {
-          setError("Invalid email or password.");
+          notify("Invalid email or password.", "invalid-login");
         }
         return attempts;
       });
@@ -111,12 +171,13 @@ const AdminLogin = () => {
 
   return (
     <div className="font-kanit min-h-screen flex flex-col items-center justify-center bg-gray-900">
+      <ToastContainer />
       <div className="bg-gray-800 p-8 rounded-lg shadow-lg w-full max-w-md">
         <div className="flex items-center justify-center mb-8">
           <img src={Logo} alt="Company Logo" className="h-20 w-auto" />
         </div>
         <h2 className="text-2xl font-bold text-purple-400 text-center mb-4">
-          Admin Login
+          Login
         </h2>
         <form className="mt-6" onSubmit={handleSubmit}>
           <div className="mb-4">
@@ -192,7 +253,6 @@ const AdminLogin = () => {
               </button>
             </div>
           </div>
-          {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center">
               <input
@@ -211,14 +271,14 @@ const AdminLogin = () => {
               </label>
             </div>
           </div>
-          <div className="text-sm text-gray- 300 mb-4">
+          <div className="text-sm text-gray-300 mb-4">
             {isLockedOut ? (
               <span>
                 Locked out! Please wait {minutesLeft}m {secondsLeft}s before
                 trying again.
               </span>
             ) : (
-              <span>Failed attempts: {failedAttempts}/3</span>
+              <span></span>
             )}
           </div>
           <button
@@ -257,14 +317,6 @@ const AdminLogin = () => {
             )}
           </button>
         </form>
-        <div className="mt-4 text-center">
-          <Link
-            to="/organizer-login"
-            className="font-medium text-purple-400 hover:text-purple-300"
-          >
-            Organizer? Login here
-          </Link>
-        </div>
       </div>
     </div>
   );

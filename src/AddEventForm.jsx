@@ -3,6 +3,18 @@ import PropTypes from "prop-types";
 import { collection, addDoc, doc, updateDoc } from "firebase/firestore";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { db } from "./config/firebaseConfig";
+import { ToastContainer, toast } from "react-toastify"; // Import toast
+import "react-toastify/dist/ReactToastify.css"; // Import toast styles
+
+const notify = (message, id, type = "error") => {
+  if (!toast.isActive(id)) {
+    if (type === "error") {
+      toast.error(message, { toastId: id });
+    } else if (type === "success") {
+      toast.success(message, { toastId: id });
+    }
+  }
+}; // Adjust the path based on your Firebase setup
 
 const AddEventForm = ({ event, onAddEvent, onCancel }) => {
   const [newEvent, setNewEvent] = useState({
@@ -113,7 +125,40 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
     setNewEvent({ ...newEvent, tickets });
   };
 
+  const validateForm = () => {
+    // Check if any required fields are empty
+    const requiredFields = [
+      "name",
+      "description",
+      "startDate",
+      "endDate",
+      "startTime",
+      "endTime",
+      "venue",
+      "eventStartDate",
+    ];
+
+    // Check each required field
+    for (const field of requiredFields) {
+      if (!newEvent[field]) {
+        return false; // Return false if any required field is empty
+      }
+    }
+
+    // Check each ticket for required fields
+    for (const ticket of newEvent.tickets) {
+      if (!ticket.type || !ticket.price || !ticket.quantity || !ticket.column) {
+        return false; // Return false if any ticket field is empty
+      }
+    }
+
+    return true; // All required fields are filled
+  };
   const handleAddEvent = async () => {
+    if (!validateForm()) {
+      notify("Please fill in the form", "addError"); // Alert the user
+      return; // Prevent adding/updating the event
+    }
     try {
       if (event && event.id) {
         // Check if event and event.id are defined
@@ -168,7 +213,7 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
   }
 
   return (
-    <div className="font-kanit mb-4 bg-gray-800 rounded-lg shadow-md p-4 text-white">
+    <div className="font-kanit bg-gray-800 rounded-lg shadow-md p-4 text-white">
       <h2 className="text-lg font-medium mb-4">
         {event ? "Edit Event" : "Add New Event"}
       </h2>
@@ -188,6 +233,7 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
             placeholder="Event Name"
             value={newEvent.name}
             onChange={handleInputChange}
+            required
           />
         </div>
         <div className="col-span-2 sm:col-span-1">
@@ -223,6 +269,7 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
             className="mt-1 block w-full px-3 py-2 rounded-md border border-gray-600 shadow-sm focus:outline-none focus:ring focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-700 text-white"
             value={newEvent.eventStartDate}
             onChange={handleInputChange}
+            required
           />
         </div>
         <div className="col-span-2 sm:col-span-1">
@@ -240,6 +287,7 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
             placeholder="Event Description"
             value={newEvent.description}
             onChange={handleInputChange}
+            required
           />
         </div>
         <div className="col-span-2 sm:col-span-1">
@@ -256,6 +304,7 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
             className="mt-1 block w-full px-3 py-2 rounded-md border border-gray-600 shadow-sm focus:outline-none focus:ring focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-700 text-white"
             value={newEvent.startTime}
             onChange={handleInputChange}
+            required
           />
         </div>
         <div className="col-span-2 sm:col-span-1">
@@ -272,6 +321,7 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
             className="mt-1 block w-full px-3 py-2 rounded-md border border-gray-600 shadow-sm focus:outline-none focus:ring focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-700 text-white"
             value={newEvent.endTime}
             onChange={handleInputChange}
+            required
           />
         </div>
         <div className="col-span-2 sm:col-span-1">
@@ -288,6 +338,7 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
             className="mt-1 block w-full px-3 py-2 rounded-md border border-gray-600 shadow-sm focus:outline-none focus:ring focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-700 text-white"
             value={newEvent.startDate}
             onChange={handleInputChange}
+            required
           />
         </div>
         <div className="col-span-2 sm:col-span-1">
@@ -304,6 +355,7 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
             className="mt-1 block w-full px-3 py-2 rounded-md border border-gray-600 shadow-sm focus:outline-none focus:ring focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-700 text-white"
             value={newEvent.endDate}
             onChange={handleInputChange}
+            required
           />
         </div>
         <div className="col-span-2 sm:col-span-1">
@@ -321,6 +373,7 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
             placeholder="Event Venue"
             value={newEvent.venue}
             onChange={handleInputChange}
+            required
           />
         </div>
         <div className="col-span-2">
@@ -384,6 +437,7 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
                 value={ticket.type}
                 onChange={(e) => handleTicketChange(index, e)}
                 className="px-3 py-2 rounded-md border border-gray-600 shadow-sm focus:outline-none focus:ring focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-700 text-white"
+                required
               />
               <input
                 type="number"
@@ -392,6 +446,7 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
                 value={ticket.price}
                 onChange={(e) => handleTicketChange(index, e)}
                 className="px-3 py-2 rounded-md border border-gray-600 shadow-sm focus:outline-none focus:ring focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-700 text-white"
+                required
               />
               <input
                 type="number"
@@ -400,6 +455,7 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
                 value={ticket.quantity}
                 onChange={(e) => handleTicketChange(index, e)}
                 className="px-3 py-2 rounded-md border border-gray-600 shadow-sm focus:outline-none focus:ring focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-700 text-white"
+                required
               />
               <input
                 type="text"
@@ -408,6 +464,7 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
                 value={ticket.column}
                 onChange={(e) => handleTicketChange(index, e)}
                 className="px-3 py-2 rounded-md border border-gray-600 shadow-sm focus:outline-none focus:ring focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-700 text-white"
+                required
               />
               <button
                 type="button"

@@ -9,7 +9,19 @@ import {
   updateDoc,
 } from "firebase/firestore"; // Import Firestore functions
 import { Html5QrcodeScanner } from "html5-qrcode";
-import Modal from "./Modal"; // Import the Modal component
+import Modal from "./Modal";
+import { ToastContainer, toast } from "react-toastify"; // Import toast
+import "react-toastify/dist/ReactToastify.css"; // Import toast styles
+
+const notify = (message, id, type = "error") => {
+  if (!toast.isActive(id)) {
+    if (type === "error") {
+      toast.error(message, { toastId: id });
+    } else if (type === "success") {
+      toast.success(message, { toastId: id });
+    }
+  }
+}; // Import the Modal component
 
 const EventPanel = () => {
   const navigate = useNavigate();
@@ -99,7 +111,7 @@ const EventPanel = () => {
 
             // Check if the ticket has already been scanned
             if (scannedTickets.has(ticketID)) {
-              alert("This ticket has already been scanned.");
+              notify("This ticket has already been scanned.", "errorScan");
               qrCodeScanner.clear();
               setIsQrScannerOpen(false);
               return; // Exit if already scanned
@@ -131,10 +143,17 @@ const EventPanel = () => {
               // Add the ticketID to the scanned tickets set
               setScannedTickets((prev) => new Set(prev).add(ticketID));
 
-              alert(`User ${firstName} ${lastName} is now registered.`);
+              notify(
+                `User ${firstName} ${lastName} is now registered.`,
+                "successSent",
+                "success"
+              );
               console.log(`User  ${firstName} ${lastName} is now registered.`);
             } else {
-              alert("No matching user found for the scanned ticket.");
+              notify(
+                "No matching user found for the scanned ticket.",
+                "errorValid"
+              );
               console.log("No matching user found for the scanned ticket.");
             }
           } catch (error) {

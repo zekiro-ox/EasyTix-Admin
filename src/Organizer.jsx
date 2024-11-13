@@ -1,24 +1,38 @@
 import React, { useState, useEffect } from "react";
-import { FaSearch, FaPlus, FaEdit, FaTrash } from "react-icons/fa";
+import { FaSearch, FaPlus, FaEdit, FaTrash, FaKey } from "react-icons/fa";
 import Sidebar from "./Sidebar";
 import AddOrganizerForm from "./AddOrganizerForm";
 import EditOrganizerForm from "./EditOrganizerForm";
 import {
   collection,
-  addDoc,
-  getDocs,
-  updateDoc,
-  deleteDoc,
   doc,
+  setDoc,
+  getDocs,
+  deleteDoc,
 } from "firebase/firestore";
-import { db } from "./config/firebaseConfig";
+import { db, auth } from "./config/firebaseConfig";
+import {
+  createUserWithEmailAndPassword,
+  sendPasswordResetEmail,
+} from "firebase/auth";
+import { ToastContainer, toast } from "react-toastify"; // Import toast
+import "react-toastify/dist/ReactToastify.css"; // Import toast styles
+
+const notify = (message, id, type = "error") => {
+  if (!toast.isActive(id)) {
+    if (type === "error") {
+      toast.error(message, { toastId: id });
+    } else if (type === "success") {
+      toast.success(message, { toastId: id });
+    }
+  }
+};
 
 const OrganizerComponent = () => {
   const [organizers, setOrganizers] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [showAddForm, setShowAddForm] = useState(false);
-  const [showEditForm, setShowEditForm] = useState(false);
-  const [currentOrganizer, setCurrentOrganizer] = useState(null);
+  const [editOrganizer, setEditOrganizer] = useState(null);
 
   useEffect(() => {
     fetchOrganizers();
@@ -26,15 +40,14 @@ const OrganizerComponent = () => {
 
   const fetchOrganizers = async () => {
     try {
-      const querySnapshot = await getDocs(collection(db, "Accounts"));
+      const querySnapshot = await getDocs(collection(db, "organizer"));
       const organizerList = querySnapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       }));
-      console.log("Fetched organizers:", organizerList);
       setOrganizers(organizerList);
     } catch (error) {
-      console.error("Error fetching organizers: ", error);
+      console.error("Error fetching organizers:", error);
     }
   };
 
@@ -42,74 +55,106 @@ const OrganizerComponent = () => {
     setSearchTerm(event.target.value);
   };
 
-  const handleAddOrganizer = async (newOrganizer) => {
+  const handleAddOrganizer = async ({
+    firstName,
+    lastName,
+    email,
+    password,
+  }) => {
     try {
-      const docRef = await addDoc(collection(db, "Accounts"), newOrganizer);
-      newOrganizer.id = docRef.id;
-      setOrganizers([...organizers, newOrganizer]);
+      // Create a user in Firebase Authentication
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      const { uid } = userCredential.user;
+
+      // Save additional user details in Firestore
+      await setDoc(doc(db, "organizer", uid), {
+        firstName,
+        lastName,
+        email,
+        uid,
+      });
+
+      // Update the local state
+      setOrganizers([
+        ...organizers,
+        { id: uid, firstName, lastName, email, uid },
+      ]);
       setShowAddForm(false);
+      notify("Account created!", "successfulCreation", "success");
     } catch (error) {
-      console.error("Error adding organizer: ", error);
+      console.error("Error adding organizer:", error);
+      notify("Failed to create", "errorCreation");
     }
   };
 
-  const handleSaveOrganizer = async (updatedOrganizer) => {
+  const handleUpdateOrganizer = async ({ id, firstName, lastName }) => {
     try {
-      const docRef = doc(db, "Accounts", updatedOrganizer.id);
-      await updateDoc(docRef, updatedOrganizer);
-      const updatedOrganizers = organizers.map((organizer) =>
-        organizer.id === updatedOrganizer.id ? updatedOrganizer : organizer
+      // Update Firestore document
+      const organizerRef = doc(db, "organizer", id);
+      await setDoc(organizerRef, { firstName, lastName }, { merge: true });
+
+      // Update local state
+      setOrganizers((prev) =>
+        prev.map((org) =>
+          org.id === id ? { ...org, firstName, lastName } : org
+        )
       );
-      setOrganizers(updatedOrganizers);
-      setShowEditForm(false);
+      setEditOrganizer(null);
+      notify("Updated!", "successfulCreation", "success");
     } catch (error) {
-      console.error("Error updating organizer: ", error);
+      console.error("Error updating organizer:", error);
+      notify("Failed to edit", "errorCreation");
     }
   };
 
-  const handleDeleteOrganizer = async (organizerId) => {
+  const handleSendResetPassword = async (email) => {
+    // Check if the email is a valid Gmail address
+    if (!email.endsWith("@gmail.com")) {
+      notify("The email address is not a valid Gmail address.", "errorValid");
+      return;
+    }
+
     try {
-      await deleteDoc(doc(db, "Accounts", organizerId));
-      const updatedOrganizers = organizers.filter(
-        (organizer) => organizer.id !== organizerId
+      await sendPasswordResetEmail(auth, email);
+      notify(
+        "Reset password link has been sent successfully.",
+        "successSent",
+        "success"
       );
-      setOrganizers(updatedOrganizers);
     } catch (error) {
-      console.error("Error deleting organizer: ", error);
+      console.error("Error sending reset password email:", error);
+      notify(
+        "Failed to send reset password link. Please try again.",
+        "errorSent"
+      );
     }
   };
 
-  const openEditForm = (organizerId) => {
-    const organizer = organizers.find((org) => org.id === organizerId);
-    setCurrentOrganizer(organizer);
-    setShowEditForm(true);
-  };
-
-  const filteredOrganizers = organizers.filter(
-    (organizer) =>
-      organizer.name &&
-      organizer.name.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredOrganizers = organizers.filter((organizer) =>
+    `${organizer.firstName} ${organizer.lastName}`
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase())
   );
 
   return (
     <div className="flex flex-col lg:flex-row min-h-screen bg-gray-900 text-gray-100">
       <Sidebar />
       <div className="font-kanit flex-1 flex flex-col pt-16 pr-5 pl-5 pb-5 lg:ml-64">
+        <ToastContainer />
         <div className="bg-gray-800 rounded-lg shadow-md p-6">
           <div className="mb-4 flex flex-col lg:flex-row items-start lg:items-center justify-between">
             <div className="relative flex-1 w-full lg:w-auto mb-4 lg:mb-0 lg:mr-4">
-              <div className="relative">
-                <input
-                  type="text"
-                  className="w-full px-4 py-2 rounded-lg border border-gray-700 shadow-sm focus:outline-none focus:ring focus:ring-indigo-200 bg-gray-700 text-gray-100"
-                  placeholder="Search organizers..."
-                  value={searchTerm}
-                  onChange={handleSearch}
-                />
-                <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                  <FaSearch className="text-gray-400" />
-                </div>
-              </div>
+              <input
+                type="text"
+                className="w-full px-4 py-2 rounded-lg border border-gray-700 shadow-sm focus:outline-none focus:ring focus:ring-indigo-200 bg-gray-700 text-gray-100"
+                placeholder="Search organizers..."
+                value={searchTerm}
+                onChange={handleSearch}
+              />
             </div>
             <button
               onClick={() => setShowAddForm(true)}
@@ -126,12 +171,11 @@ const OrganizerComponent = () => {
               onCancel={() => setShowAddForm(false)}
             />
           )}
-
-          {showEditForm && (
+          {editOrganizer && (
             <EditOrganizerForm
-              organizer={currentOrganizer}
-              onSaveOrganizer={handleSaveOrganizer}
-              onCancel={() => setShowEditForm(false)}
+              organizer={editOrganizer}
+              onUpdateOrganizer={handleUpdateOrganizer}
+              onCancel={() => setEditOrganizer(null)}
             />
           )}
 
@@ -161,35 +205,35 @@ const OrganizerComponent = () => {
                         {organizer.id}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                        {organizer.name || "N/A"} {/* Handle missing name */}
+                        {organizer.firstName} {organizer.lastName}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                        {organizer.email || "N/A"} {/* Handle missing email */}
+                        {organizer.email}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                        <div className="flex">
-                          <button
-                            className="mr-2 hover:text-purple-400"
-                            onClick={() => openEditForm(organizer.id)}
-                            title="Edit"
-                          >
-                            <FaEdit />
-                          </button>
-                          <button
-                            className="mr-2 hover:text-purple-400"
-                            onClick={() => handleDeleteOrganizer(organizer.id)}
-                            title="Delete"
-                          >
-                            <FaTrash />
-                          </button>
-                        </div>
+                        <button
+                          className="mr-2 hover:text-purple-400"
+                          onClick={() => setEditOrganizer(organizer)}
+                          title="Edit"
+                        >
+                          <FaEdit />
+                        </button>
+                        <button
+                          className="hover:text-purple-400"
+                          onClick={() =>
+                            handleSendResetPassword(organizer.email)
+                          }
+                          title="Reset Password"
+                        >
+                          <FaKey />
+                        </button>
                       </td>
                     </tr>
                   ))
                 ) : (
                   <tr>
                     <td
-                      colSpan="4"
+                      colSpan="3"
                       className="px-6 py-4 text-center text-gray-400"
                     >
                       No organizers found.

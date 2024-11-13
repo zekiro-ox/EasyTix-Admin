@@ -15,12 +15,7 @@ const AddOrganizerForm = ({ onAddOrganizer, onCancel }) => {
       alert("Passwords do not match.");
       return;
     }
-    const newOrganizer = {
-      name: `${firstName} ${lastName}`,
-      email,
-      password,
-    };
-    onAddOrganizer(newOrganizer);
+    onAddOrganizer({ firstName, lastName, email, password });
     setFirstName("");
     setLastName("");
     setEmail("");
