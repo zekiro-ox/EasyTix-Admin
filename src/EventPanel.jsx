@@ -179,6 +179,7 @@ const EventPanel = () => {
   return (
     <div className="min-h-screen flex flex-col bg-gray-900 text-white">
       <header className="font-kanit flex items-center justify-between p-4 bg-gray-800">
+        <ToastContainer />
         <button
           className="flex items-center text-white text-lg font-semibold mr-4 md:mr-8 hover:font-bold"
           onClick={() => navigate(-1)}
