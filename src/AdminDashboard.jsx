@@ -54,38 +54,46 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     const fetchSalesData = async () => {
+      if (!selectedEvent) return;
       const salesData = {};
       let totalTicketsSold = 0;
       let totalRevenue = 0;
+      try {
+        const customersRef = collection(
+          db,
+          `events/${selectedEvent}/customers`
+        );
+        const customersSnapshot = await getDocs(customersRef);
 
-      const customersRef = collection(db, `events/${selectedEvent}/customers`);
-      const customersSnapshot = await getDocs(customersRef);
-
-      if (customersSnapshot.empty) {
-        setNoCustomers(true);
-        return; // Exit if no customers
-      } else {
-        setNoCustomers(false); // Reset if there are customers
-      }
-
-      customersSnapshot.forEach((customerDoc) => {
-        const data = customerDoc.data();
-        const ticketType = data.ticketType;
-        const quantity = data.quantity;
-        const ticketPrice = data.totalAmount || 0;
-
-        if (!salesData[ticketType]) {
-          salesData[ticketType] = 0;
+        if (customersSnapshot.empty) {
+          setNoCustomers(true);
+          return; // Exit if no customers
+        } else {
+          setNoCustomers(false); // Reset if there are customers
         }
-        salesData[ticketType] += quantity;
-        totalTicketsSold += quantity;
-        totalRevenue += ticketPrice;
-      });
 
-      setSalesData(salesData);
-      setTotalTicketsSold(totalTicketsSold);
-      setTotalRevenue(totalRevenue);
+        customersSnapshot.forEach((customerDoc) => {
+          const data = customerDoc.data();
+          const ticketType = data.ticketType;
+          const quantity = data.quantity;
+          const ticketPrice = data.totalAmount || 0;
+
+          if (!salesData[ticketType]) {
+            salesData[ticketType] = 0;
+          }
+          salesData[ticketType] += quantity;
+          totalTicketsSold += quantity;
+          totalRevenue += ticketPrice;
+        });
+
+        setSalesData(salesData);
+        setTotalTicketsSold(totalTicketsSold);
+        setTotalRevenue(totalRevenue);
+      } catch (error) {
+        console.error("Error fetching sales data:", error);
+      }
     };
+
     fetchSalesData();
   }, [selectedEvent]);
 

@@ -51,6 +51,9 @@ const MessageComponent = () => {
         id: doc.id,
         ...doc.data(),
       }));
+      fetchedMessages.sort(
+        (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
+      );
 
       // Fetch user names based on sender UIDs
       const userNamePromises = fetchedMessages.map(async (message) => {
@@ -64,12 +67,8 @@ const MessageComponent = () => {
       });
 
       const userNamesArray = await Promise.all(userNamePromises);
-      const messagesWithNames = fetchedMessages.map((message, index) => ({
-        ...message,
-        senderName: userNamesArray[index],
-      }));
-      const newMessagesCount = await Promise.all(
-        messagesWithNames.map(async (message) => {
+      const messagesWithNames = await Promise.all(
+        fetchedMessages.map(async (message, index) => {
           const repliesRef = collection(
             db,
             "conversations",
@@ -77,9 +76,19 @@ const MessageComponent = () => {
             "replies"
           );
           const repliesSnapshot = await getDocs(repliesRef);
-          return repliesSnapshot.empty ? 1 : 0;
+          const replyCount = repliesSnapshot.size; // Count replies
+
+          return {
+            ...message,
+            senderName: userNamesArray[index],
+            hasReplies: replyCount > 0, // Check if there are replies
+          };
         })
       );
+
+      const newMessagesCount = messagesWithNames.map((message) =>
+        message.hasReplies ? 0 : 1
+      ); // Count messages without replies
 
       setNewMessageCount(newMessagesCount.reduce((a, b) => a + b, 0)); // Sum up the counts
       setMessages(messagesWithNames);
@@ -209,7 +218,9 @@ const MessageComponent = () => {
             {messages.map((message) => (
               <div
                 key={message.id}
-                className={`bg-gray-700 rounded-lg p-4 mb-4 cursor-pointer`}
+                className={`bg-gray-700 rounded-lg p-4 mb-4 cursor-pointer ${
+                  !message.hasReplies ? "bg-purple-700" : ""
+                }`} // Highlight if no replies
                 onClick={() => openMessage(message)}
               >
                 <div className="flex justify-between items-center mb-2">

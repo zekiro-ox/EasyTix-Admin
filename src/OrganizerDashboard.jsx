@@ -39,12 +39,12 @@ const OrganizerDashboard = () => {
           ...doc.data(),
         }))
         .filter((event) => {
-          const startDate = new Date(event.startDate);
-          const endDate = new Date(event.endDate); // Assuming you have an eventEndDate field
+          const eventStartDate = new Date(event.eventStartDate);
+          // Assuming you have an eventEndDate field
           return (
             event.eventStatus !== "archived" && // Check if the event is not archived
-            startDate <= currentDate && // Check if the event has started
-            endDate >= currentDate // Check if the event has not ended
+            eventStartDate <= currentDate // Check if the event has started
+            // Check if the event has not ended
           );
         });
 

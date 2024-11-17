@@ -167,7 +167,7 @@ const UsersComponent = () => {
                           {user.totalAmount}
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
-                          {user.status}
+                          {user.status ? user.status : "Pending"}
                         </td>
                       </tr>
                     ))}
