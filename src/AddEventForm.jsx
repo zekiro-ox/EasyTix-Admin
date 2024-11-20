@@ -62,9 +62,33 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
     }
   }, [event]);
 
+  useEffect(() => {
+    if (newEvent.eventStartDate) {
+      const maxRegEndDate = new Date(newEvent.eventStartDate);
+      maxRegEndDate.setDate(maxRegEndDate.getDate() - 1);
+      document.getElementById("endDate").max = maxRegEndDate
+        .toISOString()
+        .split("T")[0];
+    }
+  }, [newEvent.eventStartDate]);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setNewEvent({ ...newEvent, [name]: value });
+
+    setNewEvent((prevEvent) => {
+      const updatedEvent = { ...prevEvent, [name]: value };
+
+      // If Event Start Date is updated, adjust Registration End Date's max
+      if (name === "eventStartDate" && new Date(value)) {
+        const maxRegEndDate = new Date(value);
+        maxRegEndDate.setDate(maxRegEndDate.getDate() - 1); // Set max to one day before Event Start Date
+        document.getElementById("endDate").max = maxRegEndDate
+          .toISOString()
+          .split("T")[0];
+      }
+
+      return updatedEvent;
+    });
   };
 
   const handleFileChange = async (e) => {
@@ -145,6 +169,15 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
       }
     }
 
+    // Check if Registration End Date is before Event Start Date
+    if (new Date(newEvent.endDate) >= new Date(newEvent.eventStartDate)) {
+      notify(
+        "Registration End Date must be before Event Start Date",
+        "dateError"
+      );
+      return false;
+    }
+
     // Check each ticket for required fields
     for (const ticket of newEvent.tickets) {
       if (!ticket.type || !ticket.price || !ticket.quantity || !ticket.column) {
@@ -214,6 +247,7 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
 
   return (
     <div className="font-kanit bg-gray-800 rounded-lg shadow-md p-4 text-white">
+      <ToastContainer />
       <h2 className="text-lg font-medium mb-4">
         {event ? "Edit Event" : "Add New Event"}
       </h2>
@@ -355,6 +389,11 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
             className="mt-1 block w-full px-3 py-2 rounded-md border border-gray-600 shadow-sm focus:outline-none focus:ring focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-700 text-white"
             value={newEvent.endDate}
             onChange={handleInputChange}
+            max={
+              newEvent.eventStartDate
+                ? new Date(newEvent.eventStartDate).toISOString().split("T")[0]
+                : ""
+            }
             required
           />
         </div>
@@ -429,7 +468,10 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
         <div className="col-span-2">
           <h3 className="text-md font-medium text-gray-300 mb-2">Tickets</h3>
           {newEvent.tickets.map((ticket, index) => (
-            <div key={index} className="grid grid-cols-5 gap-2 mb-2">
+            <div
+              key={`${ticket.type}-${index}`}
+              className="grid grid-cols-5 gap-2 mb-2"
+            >
               <input
                 type="text"
                 name="type"
