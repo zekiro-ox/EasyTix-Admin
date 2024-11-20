@@ -17,7 +17,6 @@ const notify = (message, id, type = "error") => {
 }; // Adjust the path based on your Firebase setup
 
 const AddEventForm = ({ event, onAddEvent, onCancel }) => {
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [newEvent, setNewEvent] = useState({
     name: "",
     description: "",
@@ -65,21 +64,7 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-
-    setNewEvent((prevEvent) => {
-      const updatedEvent = { ...prevEvent, [name]: value };
-
-      // If Event Start Date is updated, adjust Registration End Date's max
-      if (name === "eventStartDate" && new Date(value)) {
-        const maxRegEndDate = new Date(value);
-        maxRegEndDate.setDate(maxRegEndDate.getDate() - 1); // Set max to one day before Event Start Date
-        document.getElementById("endDate").max = maxRegEndDate
-          .toISOString()
-          .split("T")[0];
-      }
-
-      return updatedEvent;
-    });
+    setNewEvent({ ...newEvent, [name]: value });
   };
 
   const handleFileChange = async (e) => {
@@ -160,15 +145,6 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
       }
     }
 
-    // Check if Registration End Date is before Event Start Date
-    if (new Date(newEvent.endDate) >= new Date(newEvent.eventStartDate)) {
-      notify(
-        "Registration End Date must be before Event Start Date",
-        "dateError"
-      );
-      return false;
-    }
-
     // Check each ticket for required fields
     for (const ticket of newEvent.tickets) {
       if (!ticket.type || !ticket.price || !ticket.quantity || !ticket.column) {
@@ -179,8 +155,6 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
     return true; // All required fields are filled
   };
   const handleAddEvent = async () => {
-    if (isSubmitting) return; // Prevent duplicate submissions
-    setIsSubmitting(true);
     if (!validateForm()) {
       notify("Please fill in the form", "addError"); // Alert the user
       return; // Prevent adding/updating the event
@@ -191,6 +165,7 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
         const eventRef = doc(db, "events", event.id);
         await updateDoc(eventRef, newEvent);
         console.log("Document updated with ID: ", event.id);
+        onAddEvent({ id: event.id, ...newEvent }); // Pass the updated event object
       } else {
         const eventsRef = collection(db, "events");
         const docRef = await addDoc(eventsRef, {
@@ -199,14 +174,12 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
           seatMapURL: newEvent.seatMapURL,
         });
         console.log("Document written with ID: ", docRef.id);
-        onAddEvent({ id: docRef.id, ...newEvent }); // Pass the added event object
+        onAddEvent({ id: docRef.id, ...newEvent }); // Pass the added event object with the correct ID
       }
       resetForm();
       setFormVisible(false); // Close the form after successful addition or update
     } catch (error) {
       console.error("Error adding or updating document: ", error);
-    } finally {
-      setIsSubmitting(false); // Re-enable button
     }
   };
 
@@ -242,7 +215,6 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
 
   return (
     <div className="font-kanit bg-gray-800 rounded-lg shadow-md p-4 text-white">
-      <ToastContainer />
       <h2 className="text-lg font-medium mb-4">
         {event ? "Edit Event" : "Add New Event"}
       </h2>
@@ -458,10 +430,7 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
         <div className="col-span-2">
           <h3 className="text-md font-medium text-gray-300 mb-2">Tickets</h3>
           {newEvent.tickets.map((ticket, index) => (
-            <div
-              key={`${ticket.type}-${index}`}
-              className="grid grid-cols-5 gap-2 mb-2"
-            >
+            <div key={index} className="grid grid-cols-5 gap-2 mb-2">
               <input
                 type="text"
                 name="type"
