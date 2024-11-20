@@ -17,6 +17,7 @@ const notify = (message, id, type = "error") => {
 }; // Adjust the path based on your Firebase setup
 
 const AddEventForm = ({ event, onAddEvent, onCancel }) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [newEvent, setNewEvent] = useState({
     name: "",
     description: "",
@@ -61,16 +62,6 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
       resetForm();
     }
   }, [event]);
-
-  useEffect(() => {
-    if (newEvent.eventStartDate) {
-      const maxRegEndDate = new Date(newEvent.eventStartDate);
-      maxRegEndDate.setDate(maxRegEndDate.getDate() - 1);
-      document.getElementById("endDate").max = maxRegEndDate
-        .toISOString()
-        .split("T")[0];
-    }
-  }, [newEvent.eventStartDate]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -188,6 +179,8 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
     return true; // All required fields are filled
   };
   const handleAddEvent = async () => {
+    if (isSubmitting) return; // Prevent duplicate submissions
+    setIsSubmitting(true);
     if (!validateForm()) {
       notify("Please fill in the form", "addError"); // Alert the user
       return; // Prevent adding/updating the event
@@ -212,6 +205,8 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
       setFormVisible(false); // Close the form after successful addition or update
     } catch (error) {
       console.error("Error adding or updating document: ", error);
+    } finally {
+      setIsSubmitting(false); // Re-enable button
     }
   };
 
@@ -389,11 +384,6 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
             className="mt-1 block w-full px-3 py-2 rounded-md border border-gray-600 shadow-sm focus:outline-none focus:ring focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-700 text-white"
             value={newEvent.endDate}
             onChange={handleInputChange}
-            max={
-              newEvent.eventStartDate
-                ? new Date(newEvent.eventStartDate).toISOString().split("T")[0]
-                : ""
-            }
             required
           />
         </div>

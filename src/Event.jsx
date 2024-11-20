@@ -18,6 +18,7 @@ import {
   deleteDoc,
   doc,
   addDoc,
+  getFirestore,
 } from "firebase/firestore";
 import { db } from "./config/firebaseConfig";
 import { ToastContainer, toast } from "react-toastify"; // Import toast
@@ -43,44 +44,60 @@ const EventComponent = () => {
   const [newEventData, setNewEventData] = useState(null); // State to hold newly added event data
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [eventToArchive, setEventToArchive] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Fetch events from Firestore on component mount
     const fetchEvents = async () => {
+      setIsLoading(true);
       try {
+        console.log("Fetching events from Firestore...");
         const eventsCollection = collection(db, "events");
-        const snapshot = await getDocs(eventsCollection);
-        const eventsData = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        setEvents(eventsData);
-        notify("Events fetched successfully!", "fetchSuccess", "success");
+        const eventsSnapshot = await getDocs(eventsCollection);
+
+        if (eventsSnapshot.empty) {
+          console.log("No events found in Firestore");
+          setEvents([]);
+          return;
+        }
+        const eventsList = eventsSnapshot.docs
+          .map((doc) => {
+            const data = doc.data();
+            console.log(`Event data for ${doc.id}:`, data);
+            return {
+              id: doc.id,
+              ...data,
+            };
+          })
+          .filter((event) => event.eventStatus !== "archived");
+        console.log("Filtered events:", eventsList);
+        setEvents(eventsList);
       } catch (error) {
-        console.error("Error fetching events: ", error);
+        console.error("Error fetching events:", error);
         notify("Error fetching events", "fetchError");
+        setEvents([]);
+      } finally {
+        setIsLoading(false);
       }
     };
     fetchEvents();
   }, []);
-
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
   };
-
   const handleAddEvent = async (newEvent) => {
     try {
+      console.log("Adding new event:", newEvent);
       const eventsRef = collection(db, "events");
       const docRef = await addDoc(eventsRef, newEvent);
-      // Add the new event to the local state
-      setEvents([...events, { id: docRef.id, ...newEvent }]);
+      const addedEvent = { id: docRef.id, ...newEvent };
+      console.log("Event added successfully:", addedEvent);
+      setEvents((prevEvents) => [...prevEvents, addedEvent]);
       notify("Event added successfully!", "addSuccess", "success");
     } catch (error) {
-      console.error("Error adding event: ", error);
+      console.error("Error adding event:", error);
       notify("Error adding event", "addError");
     }
   };
-
   const handleEditEvent = async (editedEvent) => {
     if (!editedEvent || !editedEvent.id) {
       console.error("Invalid event data:", editedEvent);
@@ -95,14 +112,12 @@ const EventComponent = () => {
       setEvents(updatedEvents);
       setSelectedEvent(null); // Clear selected event
       setShowEditForm(false);
-
       notify("Event updated successfully!", "editSuccess", "success"); // Hide edit form after editing
     } catch (error) {
       console.error("Error updating event: ", error);
       notify("Error updating event", "editError");
     }
   };
-
   const handleCancel = () => {
     setShowAddForm(false); // Hide the add form
     setShowEditForm(false); // Hide the edit form
@@ -110,7 +125,7 @@ const EventComponent = () => {
   };
 
   const handleReloadPage = () => {
-    window.location.reload(); // Reload the page
+    window.location.reload();
   };
 
   const getFirstWords = (text, wordCount) => {
@@ -244,73 +259,89 @@ const EventComponent = () => {
               onCancel={cancelArchive}
             />
           )}
-
-          <div className="overflow-x-auto">
-            <table className="min-w-full bg-gray-700 rounded-lg shadow-md overflow-hidden">
-              <thead className="bg-purple-800 text-white">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium tracking-wider">
-                    ID
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium tracking-wider">
-                    Name
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium tracking-wider">
-                    Description
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium tracking-wider">
-                    Venue
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium tracking-wider">
-                    Action
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-600">
-                {filteredEvents.map((event) => (
-                  <tr key={event.id}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                      {event.id}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                      {event.name}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300 max-w-xs break-words">
-                      {getFirstWords(event.description, 4)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                      {event.venue}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                      <div className="flex">
-                        <button
-                          onClick={() => openDetails(event.id)}
-                          className="mr-2 hover:text-purple-400"
-                          title="Details"
-                        >
-                          <FaInfoCircle />
-                        </button>
-                        <button
-                          onClick={() => openEditForm(event.id)}
-                          className="mr-2 hover:text-purple-400"
-                          title="Edit"
-                        >
-                          <FaEdit />
-                        </button>
-                        <button
-                          onClick={() => handleArchive(event.id)}
-                          className="hover:text-purple-400"
-                          title="Archive"
-                        >
-                          <FaArchive />
-                        </button>
-                      </div>
-                    </td>
+          {isLoading ? (
+            <div className="text-center py-4">
+              <p className="text-gray-400">Loading events...</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="min-w-full bg-gray-700 rounded-lg shadow-md overflow-hidden">
+                <thead className="bg-purple-800 text-white">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium tracking-wider">
+                      ID
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium tracking-wider">
+                      Name
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium tracking-wider">
+                      Description
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium tracking-wider">
+                      Venue
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium tracking-wider">
+                      Action
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-gray-600">
+                  {filteredEvents.length === 0 ? (
+                    <tr>
+                      <td
+                        colSpan="5"
+                        className="px-6 py-4 text-center text-gray-400"
+                      >
+                        No events found
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredEvents.map((event) => (
+                      <tr key={event.id}>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                          {event.id}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                          {event.name}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300 max-w-xs break-words">
+                          {getFirstWords(event.description, 4)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                          {event.venue}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                          <div className="flex">
+                            <button
+                              onClick={() => openDetails(event.id)}
+                              className="mr-2 hover:text-purple-400"
+                              title="Details"
+                            >
+                              <FaInfoCircle />
+                            </button>
+                            <button
+                              onClick={() => openEditForm(event.id)}
+                              className="mr-2 hover:text-purple-400"
+                              title="Edit"
+                            >
+                              <FaEdit />
+                            </button>
+                            <button
+                              onClick={() => handleArchive(event.id)}
+                              className="hover:text-purple-400"
+                              title="Archive"
+                            >
+                              <FaArchive />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       </div>
     </div>
