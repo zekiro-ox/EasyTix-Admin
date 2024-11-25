@@ -4,6 +4,7 @@ import { auth, db } from "./config/firebaseConfig"; // Adjust the path as per yo
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import Logo from "./assets/CompanyLogo.png";
+import { useAuth } from "./AuthProvider";
 import { ToastContainer, toast } from "react-toastify"; // Import toast
 import "react-toastify/dist/ReactToastify.css"; // Adjust the path as per your project structure
 
@@ -18,6 +19,7 @@ const AdminLogin = () => {
   const [failedAttempts, setFailedAttempts] = useState(0);
   const [isLockedOut, setIsLockedOut] = useState(false);
   const [lockoutTime, setLockoutTime] = useState(null);
+  const { setIsAuthenticated } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -99,6 +101,7 @@ const AdminLogin = () => {
           } else {
             localStorage.removeItem("rememberedEmail");
           }
+          setIsAuthenticated(true);
 
           // Show success toast
           notify(
@@ -109,8 +112,9 @@ const AdminLogin = () => {
 
           // Delay navigation for the success toast
           setTimeout(() => {
-            navigate("/dashboard");
-          }, 2000); // 2-second delay
+            navigate("/dashboard", { replace: true });
+          }, 2000);
+          return; // 2-second delay
         } else {
           // Check if the UID exists in the Firestore "organizers" collection
           const organizersRef = collection(db, "organizer");
@@ -127,6 +131,7 @@ const AdminLogin = () => {
             }
 
             // Show success toast
+            setIsAuthenticated(true);
             notify(
               "Login successful! Redirecting...",
               "login-success",
@@ -135,8 +140,9 @@ const AdminLogin = () => {
 
             // Delay navigation for the success toast
             setTimeout(() => {
-              navigate("/organizer-dashboard");
-            }, 2000); // 2-second delay
+              navigate("/organizer-dashboard", { replace: true });
+            }, 2000);
+            return; // 2-second delay
           } else {
             // User is neither admin nor organizer
             notify(

@@ -15,6 +15,8 @@ import {
 import { MdDashboard } from "react-icons/md";
 import Logo from "./assets/CompanyLogo.png";
 import { useMessage } from "./MessageContext";
+import { signOut } from "firebase/auth";
+import { auth } from "./config/firebaseConfig";
 
 const Sidebar = () => {
   const { newMessageCount } = useMessage();
@@ -34,7 +36,7 @@ const Sidebar = () => {
     // Simulate logout process with a timeout
     setTimeout(() => {
       // Perform logout actions (e.g., clear session, redirect)
-      navigate("/"); // Redirect to login page after logout
+      navigate("/admin-login", { replace: true }); // Redirect to login page after logout
       setIsLoggingOut(false); // Stop logout animation after a short delay
     }, 3000); // Simulate a delay for demo purposes
   };

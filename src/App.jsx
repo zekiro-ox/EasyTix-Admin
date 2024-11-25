@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import AdminLogin from "./AdminLogin";
 import OrganizerLogin from "./OrganizerLogin";
@@ -11,6 +11,7 @@ import OrganizerComponent from "./Organizer";
 import ArchiveComponent from "./Archive";
 import OrganizerDashboard from "./OrganizerDashboard";
 import EventPanel from "./EventPanel";
+import ProtectedRoute from "./ProtectedRoute";
 import { MessageProvider } from "./MessageContext";
 
 import "./App.css";
@@ -26,29 +27,102 @@ const salesData = Array.from({ length: 150 }, (_, i) => {
 }).reverse();
 
 function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   return (
     <MessageProvider>
       <Router>
         <Routes>
-          <Route path="/admin-login" element={<AdminLogin />} />
+          <Route
+            path="/admin-login"
+            element={<AdminLogin setAuth={setIsAuthenticated} />}
+          />
           <Route path="/organizer-login" element={<OrganizerLogin />} />
           <Route
             path="/dashboard"
-            element={<AdminDashboard salesData={salesData} />}
+            element={
+              <ProtectedRoute
+                isAuthenticated={isAuthenticated}
+                element={AdminDashboard}
+              />
+            }
           />
-          <Route path="/events" element={<EventComponent />} />
-          <Route path="/messages" element={<MessageComponent />} />
-          <Route path="/users" element={<UsersComponent />} />
-          <Route path="/organizer" element={<OrganizerComponent />} />
-          <Route path="/archive" element={<ArchiveComponent />} />
+          <Route
+            path="/events"
+            element={
+              <ProtectedRoute
+                isAuthenticated={isAuthenticated}
+                element={EventComponent}
+              />
+            }
+          />
+          <Route
+            path="/messages"
+            element={
+              <ProtectedRoute
+                isAuthenticated={isAuthenticated}
+                element={MessageComponent}
+              />
+            }
+          />
+          <Route
+            path="/users"
+            element={
+              <ProtectedRoute
+                isAuthenticated={isAuthenticated}
+                element={UsersComponent}
+              />
+            }
+          />
+          <Route
+            path="/organizer"
+            element={
+              <ProtectedRoute
+                isAuthenticated={isAuthenticated}
+                element={OrganizerComponent}
+              />
+            }
+          />
+          <Route
+            path="/archive"
+            element={
+              <ProtectedRoute
+                isAuthenticated={isAuthenticated}
+                element={ArchiveComponent}
+              />
+            }
+          />
           <Route
             path="/sales-report"
             element={<SalesReport salesData={salesData} />}
           />{" "}
           {/* Add SalesReport route */}
-          <Route path="/" element={<AdminLogin />} />
-          <Route path="/organizer-dashboard" element={<OrganizerDashboard />} />
-          <Route path="/event/:id" element={<EventPanel />} />
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute
+                isAuthenticated={isAuthenticated}
+                element={AdminLogin}
+              />
+            }
+          />
+          <Route
+            path="/organizer-dashboard"
+            element={
+              <ProtectedRoute
+                isAuthenticated={isAuthenticated}
+                element={OrganizerDashboard}
+              />
+            }
+          />
+          <Route
+            path="/event/:id"
+            element={
+              <ProtectedRoute
+                isAuthenticated={isAuthenticated}
+                element={EventPanel}
+              />
+            }
+          />
         </Routes>
       </Router>
     </MessageProvider>

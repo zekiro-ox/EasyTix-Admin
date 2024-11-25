@@ -153,7 +153,7 @@ const OrganizerDashboard = () => {
 
     setTimeout(() => {
       localStorage.clear(); // Example: Clear local storage
-      navigate("/admin-login"); // Redirect to login page after logout
+      navigate("/admin-login", { replace: true }); // Redirect to login page after logout
       setIsLoggingOut(false); // Stop logout animation after a short delay
     }, 2000); // Simulate a delay for demo purposes
   };
