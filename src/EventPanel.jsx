@@ -5,6 +5,7 @@ import {
   getFirestore,
   collection,
   getDocs,
+  getDoc,
   doc,
   updateDoc,
 } from "firebase/firestore"; // Import Firestore functions
@@ -103,11 +104,10 @@ const EventPanel = () => {
         async (qrCodeMessage) => {
           try {
             // Parse the JSON string from QR code
-            const ticketData = JSON.parse(qrCodeMessage);
-            const { ticketID, firstName, lastName } = ticketData;
+            const ticketData = JSON.parse(qrCodeMessage); // Parse the JSON string
+            const ticketID = ticketData.ticketID; // Extract the ticketID
 
-            console.log("Scanned Ticket Data:", ticketData); // Log scanned ticket data
-            console.log("Registered Users:", registeredUsers); // Log registered users
+            console.log("Scanned Ticket ID:", ticketID); // Log scanned ticket ID
 
             // Check if the ticket has already been scanned
             if (scannedTickets.has(ticketID)) {
@@ -116,19 +116,19 @@ const EventPanel = () => {
               setIsQrScannerOpen(false);
               return; // Exit if already scanned
             }
-
             // Find the user in the registered users list using document ID
-            const user = registeredUsers.find(
-              (user) => user.id === ticketID // Match with document ID
+            const userDocRef = doc(
+              getFirestore(),
+              `events/${event.id}/customers`,
+              ticketID
             );
+            const userDoc = await getDoc(userDocRef);
 
-            if (user) {
+            if (userDoc.exists()) {
+              const userData = userDoc.data();
+              const { firstName, lastName } = userData;
+
               // Update Firestore document for the matched user
-              const userDocRef = doc(
-                getFirestore(),
-                `events/${event.id}/customers`,
-                user.id
-              );
               await updateDoc(userDocRef, {
                 status: "Registered", // Update status to Registered
               });
@@ -136,7 +136,7 @@ const EventPanel = () => {
               // Update local state to reflect the change
               setRegisteredUsers((prevUsers) =>
                 prevUsers.map((u) =>
-                  u.id === user.id ? { ...u, status: "Registered" } : u
+                  u.id === ticketID ? { ...u, status: "Registered" } : u
                 )
               );
 

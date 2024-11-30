@@ -1,0 +1,18 @@
+/* toastStyles.css */
+.toast-custom {
+    background-color: #2e1065; /* Change this to your desired color */
+    color: #f5f3ff; /* Text color */
+    border-radius: 8px; /* Rounded corners */
+  }
+  
+  .toast-custom-success {
+    background-color: #4c1d95; /* Success background color */
+    color: #f5f3ff; /* Text color for success */
+  }
+  
+  .toast-custom-error {
+    background-color: #5b21b6; /* Error background color */
+    color: #f5f3ff; /* Text color for error */
+  }
+  
+  /* Add any additional styles you want */

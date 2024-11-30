@@ -60,9 +60,13 @@ const AdminLogin = () => {
   const notify = (message, id, type = "error") => {
     if (!toast.isActive(id)) {
       if (type === "error") {
-        toast.error(message, { toastId: id });
+        toast.error(message, {
+          toastId: id, // Apply custom error class
+        });
       } else if (type === "success") {
-        toast.success(message, { toastId: id });
+        toast.success(message, {
+          toastId: id, // Apply custom success class
+        });
       }
     }
   };
