@@ -70,6 +70,16 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
   const handleFileChange = async (e) => {
     const { name, files } = e.target;
     const file = files[0];
+    const validExtensions = ["image/png", "image/jpeg", "image/jpg"];
+
+    if (!validExtensions.includes(file.type)) {
+      notify(
+        "Invalid file type. Only .png, .jpg, .jpeg are allowed.",
+        "fileError"
+      );
+      return;
+    }
+
     const storage = getStorage();
     const fileRef = ref(storage, `EasyTix_Assets/${file.name}`);
 
@@ -84,6 +94,16 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
 
   const handleSeatMapChange = async (e) => {
     const file = e.target.files[0];
+    const validExtensions = ["image/png", "image/jpeg", "image/jpg"];
+
+    if (!validExtensions.includes(file.type)) {
+      notify(
+        "Invalid file type. Only .png, .jpg, .jpeg are allowed.",
+        "seatMapError"
+      );
+      return;
+    }
+
     const storage = getStorage();
     const storageRef = ref(storage, `EasyTix_Assets/${file.name}`);
 
@@ -388,6 +408,7 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
             type="file"
             id="eventPoster"
             name="eventPoster"
+            accept=".jpeg, .png, .jpg"
             className="mt-1 block w-full px-3 py-2 rounded-md border border-gray-600 shadow-sm focus:outline-none focus:ring focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-700 text-white"
             onChange={handleFileChange}
           />
@@ -413,6 +434,7 @@ const AddEventForm = ({ event, onAddEvent, onCancel }) => {
             type="file"
             id="seatMap"
             name="seatMap"
+            accept=".jpeg, .png, .jpg"
             className="mt-1 block w-full px-3 py-2 rounded-md border border-gray-600 shadow-sm focus:outline-none focus:ring focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-700 text-white"
             onChange={handleSeatMapChange}
           />
